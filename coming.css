@@ -99,3 +99,6 @@ html[data-theme="light"] .launch-menu-toggle{color:#203749;border-color:#34596a5
 
 /* Tablets retain normal links but let the header use two tidy rows. */
 @media(min-width:721px) and (max-width:980px){.launch-header{height:auto;min-height:88px;flex-wrap:wrap;gap:7px;padding-top:10px;padding-bottom:10px}.launch-header-actions{width:100%;justify-content:center;flex-wrap:wrap;gap:5px}.launch-header-actions .announce-link,.launch-header-actions .admin-login{padding:9px 11px;font-size:12px}.launch-page .theme-toggle{padding:8px 10px}}
+
+/* On phones, the closed header contains only the brand and hamburger control. */
+@media(max-width:720px){.launch-header>.launch-header-actions{display:none!important}.launch-header>.launch-header-actions.is-open{display:flex!important}.launch-header>.brand-link{flex:0 1 auto}.launch-header>.launch-menu-toggle{display:inline-flex;flex:0 0 46px;margin-left:auto}}
