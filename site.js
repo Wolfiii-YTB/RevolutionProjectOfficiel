@@ -25,6 +25,7 @@ const defaults={
   'donate-iban':'',
   'donate-bic':'',
   'donate-reference':'Soutien RV RevolutionProject',
+  'donate-paypal-url':'',
   'footer-motto':'FAIRE PLACE AU POSSIBLE.'
 };
 function getContent(){try{return {...defaults,...JSON.parse(localStorage.getItem('rv-content')||'{}')}}catch{return defaults}}

@@ -43,4 +43,4 @@ Le site démarre avec son contenu par défaut et des listes publiques vides. Les
 
 ## Soutien par virement direct
 
-La page `soutenir.html` propose uniquement un virement bancaire lancé par le visiteur depuis sa propre banque. Elle ne traite pas les cartes et ne passe pas par un prestataire de paiement. Dans le panel, l’onglet « Soutien » permet de saisir un bénéficiaire, un IBAN, un BIC facultatif et un motif, puis d’activer ou non l’affichage public. Les coordonnées publiées sont visibles par tous les visiteurs. La page ne confirme pas automatiquement les virements reçus.
+La page `soutenir.html` propose uniquement un virement bancaire lancé par le visiteur depuis sa propre banque. Elle ne traite pas les cartes et ne passe pas par un prestataire de paiement. Dans le panel, l’onglet « Soutien » permet de saisir un bénéficiaire, un IBAN, un BIC facultatif et un motif, puis d’activer ou non l’affichage public. Les coordonnées publiées sont visibles par tous les visiteurs. Tu peux aussi saisir un lien PayPal : le paiement passera alors par PayPal. La page ne confirme pas automatiquement les virements reçus.
