@@ -21,3 +21,7 @@ body.launch-page{min-height:100vh;min-height:100svh;display:flex;flex-direction:
 .progress-main{padding-bottom:50px}
 .progress-empty{padding:24px 0}
 @media(max-width:720px){.announcements-main,.devlogs-main{padding-bottom:36px}.progress-main{padding-bottom:35px}}
+
+/* Mobile text safety: long names, links, and imported copy must stay inside the viewport. */
+@media(max-width:720px){html,body{max-width:100%;overflow-x:clip}.launch-page h1,.launch-page h2,.launch-page h3,.launch-page p,.launch-page a,.launch-page span{min-width:0;overflow-wrap:anywhere}.hero h1,.manifesto h2,.approach h2,.actions h2,.join-section h2{overflow-wrap:anywhere}.hero-copy,.manifesto-grid>*,.approach-heading>*,.actions-heading>*,.contact-section>*,.roadmap-step>div{min-width:0}.footer-right{min-width:0;flex-wrap:wrap}.section-pad,.join-section,.roadmap-section,.contact-section{padding-left:6%;padding-right:6%}}
+@media(max-width:390px){.hero h1{font-size:clamp(40px,12vw,49px)}.hero-lede,.manifesto-grid p,.principle p,.roadmap-step p,.contact-copy p{font-size:15px;line-height:1.7}.stat-quote{max-width:100%;overflow-wrap:anywhere}.footer-right a{overflow-wrap:anywhere}}
