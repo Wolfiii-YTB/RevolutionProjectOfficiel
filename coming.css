@@ -115,4 +115,8 @@ html[data-theme="light"] .launch-menu-toggle{color:#203749;border-color:#34596a5
   body.launch-page > header.launch-header > nav.launch-header-actions > a,
   body.launch-page > header.launch-header > nav.launch-header-actions > button{display:flex!important;width:100%!important;min-width:0;min-height:48px!important;flex:0 0 auto;align-items:center;justify-content:flex-start!important;padding:11px 14px!important;text-align:left;white-space:normal;overflow-wrap:anywhere;font-size:15px!important;line-height:1.35;}
   body.launch-page > header.launch-header > nav.launch-header-actions > button.theme-toggle{margin:0;border:1px solid #94adbe55;}
+  body.launch-page > header.launch-header > nav#launch-navigation:not(.is-open){display:none!important;}
+  body.launch-page > main.launch-main{display:grid!important;place-items:start center!important;min-height:auto!important;padding:clamp(48px,8vh,76px) 20px 72px!important;overflow:visible!important;}
+  body.launch-page > main.launch-main > .launch-content{display:block!important;width:min(100%,690px);min-width:0;}
+  body.launch-page > main.launch-main > .launch-content > h1{display:block!important;visibility:visible!important;overflow:visible!important;line-height:1.04!important;}
 }
