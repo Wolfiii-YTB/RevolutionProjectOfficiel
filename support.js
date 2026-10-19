@@ -7,7 +7,7 @@
     const validIban=(()=>{if(!/^[A-Z]{2}[0-9]{2}[A-Z0-9]{11,30}$/.test(iban))return false;const rearranged=iban.slice(4)+iban.slice(0,4);let remainder=0;for(const char of rearranged){const digits=char>='A'?(char.charCodeAt(0)-55).toString():char;for(const digit of digits)remainder=(remainder*10+Number(digit))%97;}return remainder===1})();
     const hasDetails=enabled&&beneficiary&&validIban;
     let paypalUrl='';
-    try{const parsed=new URL(String(content['donate-paypal-url']||'').trim());if(parsed.protocol==='https:'&&['paypal.me','www.paypal.com','paypal.com'].includes(parsed.hostname)&&parsed.pathname!=='/')paypalUrl=parsed.href}catch{}
+    try{const parsed=new URL(String(content['donate-paypal-url']||'').trim());if(enabled&&parsed.protocol==='https:'&&['paypal.me','www.paypal.com','paypal.com'].includes(parsed.hostname)&&parsed.pathname!=='/')paypalUrl=parsed.href}catch{}
     if(content['donate-title'])byId('donate-title').textContent=content['donate-title'];
     if(content['donate-intro'])byId('donate-intro').textContent=content['donate-intro'];
     byId('transfer-card').hidden=!hasDetails;
