@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self' https://gkshnhdegrfscficfjye.supabase.co; font-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self' mailto:; frame-src 'none'">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#07111d">
+  <meta name="description" content="Informations sur les statistiques de visite et la confidentialité de RV : RevolutionProject.">
+  <title>Confidentialité — RV : RevolutionProject</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="coming.css">
+  <link rel="stylesheet" href="analytics.css">
+  <style>
+    .privacy-main{width:min(100% - 36px,900px);margin:0 auto;padding:70px 0 90px}.privacy-main h1{font:clamp(42px,7vw,68px)/1.05 Georgia,serif;letter-spacing:-.04em}.privacy-main h1 em{color:#8ccf39}.privacy-main h2{margin:34px 0 10px;font:600 24px/1.25 'Segoe UI',Arial,sans-serif}.privacy-main p,.privacy-main li{font:17px/1.8 'Segoe UI',Arial,sans-serif;color:var(--muted,#64727b)}.privacy-main a{color:#248bb7}.privacy-back{display:inline-flex;margin-top:26px;padding:13px 18px;border:1px solid currentColor;color:inherit;text-decoration:none}
+    html[data-theme="dark"] .privacy-main p,html[data-theme="dark"] .privacy-main li{color:#c4d0d5}html[data-theme="dark"] .privacy-main a{color:#66c9f0}
+    @media(max-width:600px){.privacy-main{padding:42px 0 55px}.privacy-main p,.privacy-main li{font-size:16px}}
+  </style>
+</head>
+<body class="launch-page">
+  <header class="launch-header"><a class="brand-link" href="index.html"><img src="assets/rv-logo.png" alt="RV RevolutionProject"></a><button class="launch-menu-toggle" type="button" aria-expanded="false" aria-controls="launch-navigation" aria-label="Ouvrir le menu"><span></span><span></span><span></span></button><nav id="launch-navigation" class="launch-header-actions" aria-label="Navigation"><a class="announce-link" href="index.html">Accueil</a><a class="announce-link" href="annonces.html">Nos projets</a><a class="announce-link" href="devlogs.html">Avancées</a><a class="announce-link" href="parcours.html">Progression</a><a class="announce-link" href="videos.html">Vidéos</a><a class="announce-link" href="contact.html">Contact</a><a class="announce-link" href="soutenir.html">Soutenir</a><button class="theme-toggle" id="theme-toggle" type="button" aria-label="Changer de thème">◐ <span>Thème</span></button><a class="admin-login" href="admin.html">Connexion admin <span>↗</span></a></nav></header>
+  <main class="privacy-main">
+    <p class="devlogs-eyebrow">RV / INFORMATIONS</p>
+    <h1>Confidentialité<br><em>et statistiques.</em></h1>
+    <p>Les statistiques de visite sont facultatives. Elles ne démarrent qu’après un clic sur « Accepter les statistiques ». Refuser ne bloque aucune page ni fonctionnalité.</p>
+    <h2>Quelles données sont utilisées ?</h2>
+    <p>Si tu acceptes, RV : RevolutionProject enregistre l’adresse IP, une session aléatoire, la page consultée, le temps passé sur cette page, le type d’appareil et une localisation estimée (pays, région et ville). La localisation par IP est approximative et peut être erronée. Nous ne cherchons pas à retrouver ton identité. Ton choix est conservé dans le navigateur pendant six mois, puis la bannière réapparaît.</p>
+    <h2>Services qui traitent ces données</h2>
+    <p>Les événements sont stockés dans Supabase pour le compte de RV. L’adresse IP est transmise à <a href="https://www.ipwho.org/docs/reference/single-ip-specific" target="_blank" rel="noopener noreferrer">IPWho (opéré par Lavrox)</a> afin d’estimer la localisation. Consulte aussi leur <a href="https://lavrox.com/legal" target="_blank" rel="noopener noreferrer">centre juridique et sa politique de confidentialité</a>. La clé d’accès GeoIP est conservée côté serveur Supabase et n’est pas intégrée au site public.</p>
+    <p>Indépendamment de ces statistiques, Supabase, qui héberge la base et la fonction serveur, reçoit des métadonnées techniques de connexion. Ses journaux de passerelle peuvent notamment inclure l’adresse IP, l’agent utilisateur et l’heure des requêtes. Ce traitement technique est distinct des statistiques RV et n’est pas contrôlé par le bouton de consentement. Consulte la <a href="https://supabase.com/privacy" target="_blank" rel="noopener noreferrer">politique de confidentialité de Supabase</a> pour les informations sur son traitement des données.</p>
+    <h2>Durée, refus et retrait</h2>
+    <p>Les événements statistiques RV sont conservés jusqu’à 90 jours et les anciennes lignes sont nettoyées lors d’un nouvel enregistrement statistique. Les chiffres sont indicatifs : le temps et la page sont transmis par le navigateur et peuvent être inexacts. Tu peux refuser dès l’affichage de la bannière ou retirer ton accord à tout moment avec le bouton « Préférences de confidentialité » en bas des pages. Le retrait arrête les prochaines mesures ; il ne supprime pas automatiquement les données déjà enregistrées.</p>
+    <h2>Exercer tes droits</h2>
+    <p>Pour demander l’accès ou la suppression d’événements te concernant, écris à <a href="mailto:bonjour@revolutionproject.fr">bonjour@revolutionproject.fr</a> en indiquant une période et, si tu la connais, ton adresse IP. Responsable indiqué pour ce site : RV : RevolutionProject. Cette page doit être relue et complétée par l’équipe avant l’ouverture publique, notamment pour confirmer l’identité du responsable et les informations légales applicables.</p>
+    <button class="privacy-back" id="privacy-preferences" type="button">Modifier mes préférences</button>
+    <a class="privacy-back" href="index.html">← Retour à l’accueil</a>
+  </main>
+  <footer class="launch-footer"><span>© <span id="footer-year"></span> RV : REVOLUTIONPROJECT</span><a href="index.html">ACCUEIL <span>↗</span></a><a href="annonces.html">NOS PROJETS <span>↗</span></a><a href="admin.html">CONNEXION ADMIN <span>↗</span></a></footer>
+  <script src="supabase-cloud.js"></script><script src="site.js"></script><script src="analytics.js"></script>
+</body>
+</html>

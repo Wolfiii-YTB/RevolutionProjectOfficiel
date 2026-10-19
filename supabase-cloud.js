@@ -5,8 +5,11 @@
   const SESSION_KEY = 'rv-supabase-session';
   const CONTENT_KEYS = ['rv-content','rv-pages','rv-announcements','rv-devlogs','rv-progressions','rv-videos','rv-roadmap'];
 
-  function session() { try { return JSON.parse(localStorage.getItem(SESSION_KEY) || 'null'); } catch { return null; } }
-  function saveSession(value) { if (value) localStorage.setItem(SESSION_KEY, JSON.stringify(value)); else localStorage.removeItem(SESSION_KEY); }
+  // Keep the Auth token for this browser tab only; never persist it across restarts.
+  function session() { try { return JSON.parse(sessionStorage.getItem(SESSION_KEY) || 'null'); } catch { return null; } }
+  function saveSession(value) { if (value) sessionStorage.setItem(SESSION_KEY, JSON.stringify(value)); else sessionStorage.removeItem(SESSION_KEY); }
+  // Remove sessions created by older versions that stored refresh tokens persistently.
+  try { localStorage.removeItem(SESSION_KEY); } catch {}
   function headers(token) { const result = { apikey: PUBLISHABLE_KEY, 'Content-Type': 'application/json' }; if (token) result.Authorization = `Bearer ${token}`; return result; }
   async function request(path, options = {}, token) {
     const response = await fetch(`${PROJECT_URL}${path}`, { ...options, headers: { ...headers(token), ...(options.headers || {}) } });
@@ -62,6 +65,24 @@
     const requests = await listContactRequests();
     for (const item of requests) await deleteContactRequest(item.id);
   }
+  async function listAdminAuditLog() {
+    const current = session();
+    if (!current?.access_token) throw new Error('Connexion admin requise.');
+    return (await request('/rest/v1/admin_audit_log?select=id,actor_email,action,changed_keys,created_at&order=created_at.desc&limit=100', {}, current.access_token)) || [];
+  }
+  async function listAnalytics() {
+    const current = session();
+    if (!current?.access_token) throw new Error('Connexion admin requise.');
+    const rows = [];
+    const pageSize = 1000;
+    const maxRows = 5000;
+    for (let offset = 0; offset < maxRows; offset += pageSize) {
+      const page = await request(`/rest/v1/analytics_events?select=session_id,page,duration_seconds,visitor_ip,country,region,city,device,created_at&order=created_at.desc&limit=${pageSize}&offset=${offset}`, {}, current.access_token) || [];
+      rows.push(...page);
+      if (page.length < pageSize) break;
+    }
+    return rows;
+  }
   async function signIn(email, password) {
     const result = await request('/auth/v1/token?grant_type=password', { method: 'POST', body: JSON.stringify({ email, password }) });
     if (!result?.access_token) throw new Error('Connexion refusée. Vérifie l’adresse e-mail et le mot de passe du compte admin.');
@@ -78,5 +99,5 @@
     try { await request('/auth/v1/user', {}, current.access_token); return true; }
     catch { saveSession(null); return false; }
   }
-  window.RVCloud = { ready: load(), load, save, signIn, signOut, restoreSession, applyBundle, collectBundle, submitContactRequest, listContactRequests, deleteContactRequest, clearContactRequests, contentKeys: CONTENT_KEYS };
+  window.RVCloud = { ready: load(), load, save, signIn, signOut, restoreSession, applyBundle, collectBundle, submitContactRequest, listContactRequests, deleteContactRequest, clearContactRequests, listAdminAuditLog, listAnalytics, contentKeys: CONTENT_KEYS };
 })();

@@ -33,12 +33,26 @@ Le site utilise Supabase pour partager les textes, annonces, avancées, progress
 
 ### Configuration unique
 
-1. Dans Supabase, ouvre **SQL Editor**, colle le contenu de [`supabase/setup.sql`](supabase/setup.sql), puis exécute-le. Il crée les deux tables et leurs règles RLS : tout le monde peut lire le contenu public et envoyer un formulaire, mais seul un utilisateur connecté peut modifier le site ou lire/supprimer les demandes.
-2. Dans **Authentication → Users**, crée un utilisateur administrateur avec ton adresse e-mail et le mot de passe souhaité. Dans les réglages d’authentification, désactive l’inscription publique. Ne crée aucun utilisateur public.
-3. Publie les fichiers du dépôt sur GitHub Pages. Utilise l’adresse HTTPS du site ; l’authentification Supabase et les appels réseau ne fonctionnent pas en ouvrant directement les fichiers `file://`.
-4. Connecte-toi sur `admin.html` avec l’adresse e-mail et le mot de passe du compte créé. Enregistre ou importe le contenu depuis ce panel : il sera alors visible par tous les visiteurs.
+1. Dans Supabase, ouvre **Authentication → Users** et crée ton compte administrateur. Dans les réglages d’authentification, désactive l’inscription publique.
+2. Dans **SQL Editor**, exécute [`supabase/setup.sql`](supabase/setup.sql). Les droits d’administration sont désormais limités à une liste privée d’identifiants utilisateurs ; les demandes de contact ont des limites de taille et une limite de trois envois par adresse e-mail sur dix minutes.
+3. Dans **Authentication → Users**, copie l’UUID de ton compte admin. Dans SQL Editor, exécute cette commande en remplaçant la valeur entre apostrophes par cet UUID :
 
-Le site démarre avec son contenu par défaut et des listes publiques vides. Les contenus enregistrés uniquement dans un ancien navigateur ne sont pas importés automatiquement : importe le fichier JSON depuis le panel après la configuration. Les demandes de contact sont partagées dans Supabase ; elles ne contiennent aucun secret d’administration.
+   ```sql
+   insert into private.site_admins (user_id)
+   values ('COLLE-ICI-L-UUID-DE-TON-COMPTE');
+   ```
+
+   Cette étape est nécessaire pour que le panel puisse publier et consulter les demandes. Ne partage pas l’UUID avec le public.
+4. Publie les fichiers du dépôt sur GitHub Pages. Utilise l’adresse HTTPS du site ; l’authentification Supabase et les appels réseau ne fonctionnent pas en ouvrant directement les fichiers `file://`.
+5. Connecte-toi sur `admin.html` avec l’adresse e-mail et le mot de passe du compte créé. Enregistre ou importe le contenu depuis ce panel : il sera alors visible par tous les visiteurs.
+6. Pour activer les statistiques consenties, crée une clé IPWho sur [ipwho.org](https://www.ipwho.org/free-plan). Dans **Supabase → Edge Functions → Secrets**, ajoute `IPWHO_API_KEY` avec cette clé et `SITE_ORIGINS` avec l’origine de ton site (ex. `https://ton-compte.github.io`, sans le chemin `/RevolutionProjectOfficiel`). Ne mets jamais ces secrets dans GitHub.
+7. Déploie la fonction avec Supabase CLI depuis la racine du dépôt : `npx supabase login`, puis `npx supabase link --project-ref gkshnhdegrfscficfjye` et `npx supabase functions deploy rv-analytics --no-verify-jwt --project-ref gkshnhdegrfscficfjye`. Le projet Supabase doit contenir le SQL exécuté à l’étape 2 et la fonction doit être déployée avant que les statistiques puissent apparaître.
+
+Le site démarre avec son contenu par défaut et des listes publiques vides. Les contenus enregistrés uniquement dans un ancien navigateur ne sont pas importés automatiquement : importe le fichier JSON depuis le panel après la configuration. Les demandes de contact sont partagées dans Supabase ; elles ne contiennent aucun secret d’administration. Le site étant statique, la limitation du formulaire réduit les abus courants mais ne remplace pas un CAPTCHA ou une protection anti-bot par adresse IP si le formulaire devient une cible de spam.
+
+### Journal admin et statistiques de visite
+
+Le journal consigne le compte administrateur, la date et les rubriques modifiées, sans conserver le contenu des champs. Les statistiques détaillées sont désactivées tant que le visiteur n’a pas accepté la bannière : elles utilisent son IP, une estimation ville/région/pays via IPWho, la page, le temps actif et le type d’appareil. L’IP est visible uniquement dans le panel admin et les événements sont purgés après 90 jours au prochain enregistrement statistique. La localisation déjà mesurée est réutilisée pour les pages suivantes afin de limiter les appels au service GeoIP. Les estimations de ville peuvent être incorrectes, notamment avec un VPN ou un réseau mobile. La page `privacy.html` présente l’information et permet de retirer le consentement. Supabase peut aussi traiter l’IP dans ses journaux techniques d’hébergement, indépendamment des statistiques. Complète et vérifie les mentions légales avant la mise en ligne.
 
 
 ## Soutien par virement direct
