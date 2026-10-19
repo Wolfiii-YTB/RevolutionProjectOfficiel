@@ -1,0 +1,82 @@
+/* RV cloud storage: public site content is readable by everyone; writes require Supabase Auth. */
+(() => {
+  const PROJECT_URL = 'https://gkshnhdegrfscficfjye.supabase.co';
+  const PUBLISHABLE_KEY = 'sb_publishable_x_MUqOjkxaOl4j7Ux6k4MQ_cSBvWJAr';
+  const SESSION_KEY = 'rv-supabase-session';
+  const CONTENT_KEYS = ['rv-content','rv-pages','rv-announcements','rv-devlogs','rv-progressions','rv-videos','rv-roadmap'];
+
+  function session() { try { return JSON.parse(localStorage.getItem(SESSION_KEY) || 'null'); } catch { return null; } }
+  function saveSession(value) { if (value) localStorage.setItem(SESSION_KEY, JSON.stringify(value)); else localStorage.removeItem(SESSION_KEY); }
+  function headers(token) { const result = { apikey: PUBLISHABLE_KEY, 'Content-Type': 'application/json' }; if (token) result.Authorization = `Bearer ${token}`; return result; }
+  async function request(path, options = {}, token) {
+    const response = await fetch(`${PROJECT_URL}${path}`, { ...options, headers: { ...headers(token), ...(options.headers || {}) } });
+    if (!response.ok) { const detail = await response.text(); throw new Error(`Supabase (${response.status}): ${detail.slice(0, 240)}`); }
+    if (response.status === 204) return null;
+    const text = await response.text(); return text ? JSON.parse(text) : null;
+  }
+  function applyBundle(bundle) {
+    if (!bundle || typeof bundle !== 'object') return;
+    localStorage.setItem('rv-content', JSON.stringify(bundle.content || {}));
+    localStorage.setItem('rv-pages', JSON.stringify(Array.isArray(bundle.pages) ? bundle.pages : []));
+    localStorage.setItem('rv-announcements', JSON.stringify(Array.isArray(bundle.announcements) ? bundle.announcements : []));
+    localStorage.setItem('rv-devlogs', JSON.stringify(Array.isArray(bundle.devlogs) ? bundle.devlogs : []));
+    localStorage.setItem('rv-progressions', JSON.stringify(Array.isArray(bundle.progressions) ? bundle.progressions : (Array.isArray(bundle.milestones) ? bundle.milestones : [])));
+    localStorage.setItem('rv-videos', JSON.stringify(bundle.videos && typeof bundle.videos === 'object' ? bundle.videos : { channel: '', videos: [] }));
+    localStorage.setItem('rv-roadmap', JSON.stringify(Array.isArray(bundle.roadmap) ? bundle.roadmap : []));
+  }
+  function collectBundle() {
+    const read = key => { try { return JSON.parse(localStorage.getItem(key) || 'null'); } catch { return null; } };
+    const progressions = read('rv-progressions') || [];
+    return { content: read('rv-content') || {}, pages: read('rv-pages') || [], announcements: read('rv-announcements') || [], devlogs: read('rv-devlogs') || [], progressions, milestones: progressions, videos: read('rv-videos') || { channel: '', videos: [] }, roadmap: read('rv-roadmap') || [] };
+  }
+  async function load() {
+    try {
+      const rows = await request('/rest/v1/site_state?select=payload&id=eq.1');
+      if (Array.isArray(rows) && rows[0]?.payload) applyBundle(rows[0].payload);
+      else applyBundle({});
+      return Array.isArray(rows) && rows[0] ? rows[0].payload : null;
+    } catch (error) { console.warn('Supabase indisponible, utilisation du contenu déjà chargé.', error); return null; }
+  }
+  async function save(bundle = collectBundle()) {
+    const current = session();
+    if (!current?.access_token) throw new Error('Connecte-toi au panel pour publier le contenu.');
+    await request('/rest/v1/site_state?on_conflict=id', { method: 'POST', headers: { Prefer: 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify({ id: 1, payload: bundle }) }, current.access_token);
+    applyBundle(bundle);
+    return true;
+  }
+  async function submitContactRequest(record) {
+    return request('/rest/v1/contact_requests', { method: 'POST', headers: { Prefer: 'return=minimal' }, body: JSON.stringify({ id: record.id, name: record.name, email: record.email, subject: record.subject, message: record.message, source: record.source, received_at: record.receivedAt }) });
+  }
+  async function listContactRequests() {
+    const current = session();
+    if (!current?.access_token) throw new Error('Connexion admin requise.');
+    const rows = await request('/rest/v1/contact_requests?select=id,name,email,subject,message,source,received_at&order=received_at.desc', {}, current.access_token);
+    return (rows || []).map(row => ({ id: row.id, name: row.name, email: row.email, subject: row.subject, message: row.message, source: row.source, receivedAt: row.received_at }));
+  }
+  async function deleteContactRequest(id) {
+    const current = session();
+    if (!current?.access_token) throw new Error('Connexion admin requise.');
+    await request(`/rest/v1/contact_requests?id=eq.${encodeURIComponent(id)}`, { method: 'DELETE', headers: { Prefer: 'return=minimal' } }, current.access_token);
+  }
+  async function clearContactRequests() {
+    const requests = await listContactRequests();
+    for (const item of requests) await deleteContactRequest(item.id);
+  }
+  async function signIn(email, password) {
+    const result = await request('/auth/v1/token?grant_type=password', { method: 'POST', body: JSON.stringify({ email, password }) });
+    if (!result?.access_token) throw new Error('Connexion refusée. Vérifie l’adresse e-mail et le mot de passe du compte admin.');
+    saveSession(result);
+    return result;
+  }
+  async function signOut() {
+    const current = session();
+    try { if (current?.access_token) await request('/auth/v1/logout', { method: 'POST' }, current.access_token); } finally { saveSession(null); }
+  }
+  async function restoreSession() {
+    const current = session();
+    if (!current?.access_token) return false;
+    try { await request('/auth/v1/user', {}, current.access_token); return true; }
+    catch { saveSession(null); return false; }
+  }
+  window.RVCloud = { ready: load(), load, save, signIn, signOut, restoreSession, applyBundle, collectBundle, submitContactRequest, listContactRequests, deleteContactRequest, clearContactRequests, contentKeys: CONTENT_KEYS };
+})();
