@@ -8,7 +8,7 @@ Ouvre `index.html` pour l’accueil et `admin.html` pour le panel. Une fois Supa
 
 Le panel permet d’éditer les textes, créer des pages, ajouter des projets avec tags et images, publier des avancées, organiser plusieurs progressions et leurs étapes, modifier le schéma d’accueil, et gérer les vidéos YouTube. Import/export JSON est disponible. Les photos sont optimisées en WebP.
 
-Le thème passe automatiquement en sombre de 19 h à 9 h et en clair de 9 h à 19 h, selon l’heure locale. Le visiteur peut aussi le changer manuellement jusqu’au prochain changement automatique.
+Le thème passe automatiquement en sombre de 19 h à 9 h et en clair de 9 h à 19 h, selon l’heure locale. Le visiteur peut aussi le changer manuellement jusqu’au prochain changement automatique. Le bas de page donne accès aux conditions d’utilisation, à la confidentialité et au réglage des préférences.
 
 ## GitHub Pages et Supabase
 
@@ -52,7 +52,7 @@ Le site démarre avec son contenu par défaut et des listes publiques vides. Les
 
 ### Journal admin et statistiques de visite
 
-Le journal consigne le compte administrateur, la date et les rubriques modifiées, sans conserver le contenu des champs. Les statistiques détaillées sont désactivées tant que le visiteur n’a pas accepté la bannière : elles utilisent son IP, une estimation ville/région/pays via IPWho, la page, le temps actif et le type d’appareil. L’IP est visible uniquement dans le panel admin et les événements sont purgés après 90 jours au prochain enregistrement statistique. La localisation déjà mesurée est réutilisée pour les pages suivantes afin de limiter les appels au service GeoIP. Les estimations de ville peuvent être incorrectes, notamment avec un VPN ou un réseau mobile. La page `privacy.html` présente l’information et permet de retirer le consentement. Supabase peut aussi traiter l’IP dans ses journaux techniques d’hébergement, indépendamment des statistiques. Complète et vérifie les mentions légales avant la mise en ligne.
+Le journal consigne le compte administrateur, la date et les rubriques modifiées, sans conserver le contenu des champs. La bannière permet de personnaliser trois catégories : fonctionnement essentiel (toujours actif pour retenir les choix), statistiques facultatives (IP, pages, temps actif et estimation de localisation par IPWho) et contenus YouTube externes (miniatures, photo de chaîne et lecteur). Les contenus YouTube ne sont chargés qu’après activation de cette catégorie ; les liens directs s’ouvrent uniquement à la demande. Les choix peuvent être modifiés depuis le bas de page et restent mémorisés six mois dans le stockage local du navigateur. Les événements statistiques RV sont visibles uniquement aux admins et purgés après 90 jours au prochain enregistrement ; la localisation déjà mesurée est réutilisée pour éviter des appels GeoIP répétés. Supabase peut aussi traiter l’IP dans ses journaux techniques d’hébergement, indépendamment des statistiques. `privacy.html` explique les données, les services et les droits ; `conditions.html` présente les conditions d’utilisation ; `mentions-legales.html` est un modèle à compléter avec les informations réelles de l’éditeur avant publication.
 
 
 ## Soutien par virement direct

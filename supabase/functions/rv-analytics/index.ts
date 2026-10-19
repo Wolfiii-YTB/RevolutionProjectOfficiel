@@ -1,5 +1,5 @@
 const allowedPages = new Set([
-  'Accueil', 'Projets', 'Avancées', 'Progression', 'Vidéos', 'Contact', 'Soutien', 'Confidentialité', 'Page personnalisée',
+  'Accueil', 'Projets', 'Avancées', 'Progression', 'Vidéos', 'Contact', 'Soutien', 'Confidentialité', 'Conditions', 'Mentions légales', 'Page personnalisée',
 ]);
 const allowedDevices = new Set(['Mobile', 'Tablette', 'Ordinateur', 'Inconnu']);
 

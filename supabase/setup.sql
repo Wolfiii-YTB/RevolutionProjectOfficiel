@@ -121,7 +121,7 @@ for each row execute function public.log_site_state_change();
 create table if not exists public.analytics_events (
   id uuid primary key,
   session_id uuid not null,
-  page text not null check (page in ('Accueil','Projets','Avancées','Progression','Vidéos','Contact','Soutien','Confidentialité','Page personnalisée')),
+  page text not null check (page in ('Accueil','Projets','Avancées','Progression','Vidéos','Contact','Soutien','Confidentialité','Conditions','Mentions légales','Page personnalisée')),
   duration_seconds integer not null check (duration_seconds between 0 and 21600),
   visitor_ip inet not null,
   country text not null default 'Inconnue' check (char_length(country) <= 80),
@@ -130,6 +130,9 @@ create table if not exists public.analytics_events (
   device text not null default 'Inconnu' check (device in ('Mobile','Tablette','Ordinateur','Inconnu')),
   created_at timestamptz not null default now()
 );
+alter table public.analytics_events drop constraint if exists analytics_events_page_check;
+alter table public.analytics_events add constraint analytics_events_page_check
+  check (page in ('Accueil','Projets','Avancées','Progression','Vidéos','Contact','Soutien','Confidentialité','Conditions','Mentions légales','Page personnalisée'));
 alter table public.analytics_events enable row level security;
 revoke all on public.analytics_events from anon, authenticated;
 grant select on public.analytics_events to authenticated;

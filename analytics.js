@@ -3,13 +3,15 @@
 
   const consentKey = 'rv-analytics-consent';
   const consentAtKey = 'rv-analytics-consent-at';
+  const choicesKey = 'rv-analytics-choices';
+  const mediaKey = 'rv-youtube-media-consent';
   const sessionKey = 'rv-analytics-session';
   const endpoint = 'https://gkshnhdegrfscficfjye.supabase.co/functions/v1/rv-analytics';
   const publishableKey = 'sb_publishable_x_MUqOjkxaOl4j7Ux6k4MQ_cSBvWJAr';
   const pageNames = {
     'index.html': 'Accueil', 'annonces.html': 'Projets', 'devlogs.html': 'Avancées',
     'parcours.html': 'Progression', 'videos.html': 'Vidéos', 'contact.html': 'Contact',
-    'soutenir.html': 'Soutien', 'privacy.html': 'Confidentialité',
+    'soutenir.html': 'Soutien', 'privacy.html': 'Confidentialité', 'conditions.html': 'Conditions', 'mentions-legales.html': 'Mentions légales',
   };
   const page = pageNames[location.pathname.split('/').pop()] || 'Page personnalisée';
 
@@ -32,42 +34,106 @@
     const copy = document.createElement('div');
     const title = document.createElement('h2');
     title.id = 'rv-consent-title';
-    title.textContent = 'Statistiques de visite';
+    title.textContent = 'Tes choix de confidentialité';
     const text = document.createElement('p');
     text.id = 'rv-consent-copy';
-    text.textContent = 'Avec ton accord, nous enregistrons ton adresse IP, les pages consultées, le temps passé et une localisation approximative. L’IP est transmise à IPWho pour estimer la ville, puis conservée dans Supabase pendant 90 jours. Tu peux refuser sans bloquer le site.';
+    text.textContent = 'Les statistiques facultatives utilisent ton IP, les pages vues, le temps actif et une localisation approximative. L’option YouTube charge les miniatures, la photo de chaîne et le lecteur, et peut transmettre ton IP à YouTube. Personnalise ces choix ou modifie-les à tout moment.';
     const link = document.createElement('a');
     link.href = 'privacy.html';
-    link.textContent = 'Détails et confidentialité';
-    copy.append(title, text, link);
+    link.textContent = 'Confidentialité';
+    const termsLink = document.createElement('a');
+    termsLink.href = 'conditions.html';
+    termsLink.textContent = 'Conditions générales d’utilisation';
+    const legalLink = document.createElement('a');
+    legalLink.href = 'mentions-legales.html';
+    legalLink.textContent = 'Mentions légales';
+    const legalLinks = document.createElement('div');
+    legalLinks.className = 'analytics-legal-links';
+    legalLinks.append(link, termsLink, legalLink);
+    const choices = document.createElement('fieldset');
+    choices.className = 'analytics-choice-list';
+    choices.hidden = true;
+    const legend = document.createElement('legend');
+    legend.textContent = 'Personnaliser mes choix';
+    const necessaryRow = document.createElement('label');
+    necessaryRow.className = 'analytics-choice';
+    const necessary = document.createElement('input');
+    necessary.type = 'checkbox';
+    necessary.checked = true;
+    necessary.disabled = true;
+    const necessaryCopy = document.createElement('span');
+    necessaryCopy.textContent = 'Mémorisation de tes préférences — toujours active pour retenir les choix de confidentialité.';
+    necessaryRow.append(necessary, necessaryCopy);
+    const analyticsRow = document.createElement('label');
+    analyticsRow.className = 'analytics-choice';
+    const analyticsChoice = document.createElement('input');
+    analyticsChoice.type = 'checkbox';
+    analyticsChoice.className = 'analytics-choice-toggle';
+    const analyticsCopy = document.createElement('span');
+    analyticsCopy.textContent = 'Statistiques de fréquentation — IP, pages vues, temps actif, appareil et localisation approximative via IPWho.';
+    analyticsRow.append(analyticsChoice, analyticsCopy);
+    const mediaRow = document.createElement('label');
+    mediaRow.className = 'analytics-choice';
+    const mediaChoice = document.createElement('input');
+    mediaChoice.type = 'checkbox';
+    mediaChoice.className = 'analytics-media-toggle';
+    const mediaCopy = document.createElement('span');
+    mediaCopy.textContent = 'Contenus YouTube — autoriser le chargement des miniatures, de la photo de chaîne et des lecteurs intégrés.';
+    mediaRow.append(mediaChoice, mediaCopy);
+    choices.append(legend, necessaryRow, analyticsRow, mediaRow);
+    copy.append(title, text, legalLinks, choices);
     const actions = document.createElement('div');
     actions.className = 'analytics-consent-actions';
     const reject = document.createElement('button');
     reject.type = 'button';
     reject.className = 'analytics-reject';
-    reject.textContent = 'Refuser';
-    reject.addEventListener('click', () => setConsent('refused'));
+    reject.textContent = 'Tout refuser';
+    reject.addEventListener('click', () => setConsent('refused', false));
+    const customize = document.createElement('button');
+    customize.type = 'button';
+    customize.className = 'analytics-customize';
+    customize.textContent = 'Personnaliser';
+    customize.addEventListener('click', () => {
+      choices.hidden = false;
+      analyticsChoice.checked = localStorage.getItem(consentKey) === 'accepted';
+      mediaChoice.checked = localStorage.getItem(mediaKey) === 'accepted';
+      customize.hidden = true;
+      saveChoices.hidden = false;
+      analyticsChoice.focus();
+    });
     const accept = document.createElement('button');
     accept.type = 'button';
     accept.className = 'analytics-accept';
-    accept.textContent = 'Accepter les statistiques';
-    accept.addEventListener('click', () => setConsent('accepted'));
-    actions.append(reject, accept);
+    accept.textContent = 'Tout accepter';
+    accept.addEventListener('click', () => setConsent('accepted', true));
+    const saveChoices = document.createElement('button');
+    saveChoices.type = 'button';
+    saveChoices.className = 'analytics-save-choices';
+    saveChoices.textContent = 'Enregistrer mes choix';
+    saveChoices.hidden = true;
+    saveChoices.addEventListener('click', () => setConsent(analyticsChoice.checked ? 'accepted' : 'refused', mediaChoice.checked));
+    actions.append(reject, customize, accept, saveChoices);
     banner.append(copy, actions);
     document.body.append(banner);
     return banner;
   }
 
-  function setConsent(value) {
+  function setConsent(value, allowMedia = false) {
     localStorage.setItem(consentKey, value);
     localStorage.setItem(consentAtKey, String(Date.now()));
+    localStorage.setItem(choicesKey, JSON.stringify({ essential: true, analytics: value === 'accepted', youtube: allowMedia }));
+    localStorage.setItem(mediaKey, allowMedia ? 'accepted' : 'refused');
     document.getElementById('rv-analytics-consent')?.remove();
     if (value === 'accepted') startMeasurement();
     else sessionStorage.removeItem(sessionKey);
+    window.dispatchEvent(new CustomEvent('rv:consent-updated', { detail: { analytics: value === 'accepted', youtube: allowMedia } }));
   }
 
   function showConsent() {
-    createConsentBanner().hidden = false;
+    const banner = createConsentBanner();
+    banner.hidden = false;
+    const customize = banner.querySelector('.analytics-customize');
+    if (customize) customize.click();
   }
 
   function getDevice() {
@@ -119,14 +185,30 @@
     window.addEventListener('pagehide', finish, { once: true });
   }
 
+  window.RVAnalytics = { openPreferences: showConsent };
+
   document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('privacy-preferences')?.addEventListener('click', showConsent);
     const footer = document.querySelector('.launch-footer');
     if (footer) {
-      const privacy = document.createElement('a');
-      privacy.href = 'privacy.html';
-      privacy.textContent = 'CONFIDENTIALITÉ ↗';
-      footer.append(privacy);
+      if (!footer.querySelector('a[href="privacy.html"]')) {
+        const privacy = document.createElement('a');
+        privacy.href = 'privacy.html';
+        privacy.textContent = 'CONFIDENTIALITÉ ↗';
+        footer.append(privacy);
+      }
+      if (!footer.querySelector('a[href="conditions.html"]')) {
+        const terms = document.createElement('a');
+        terms.href = 'conditions.html';
+        terms.textContent = 'CONDITIONS D’UTILISATION ↗';
+        footer.append(terms);
+      }
+      if (!footer.querySelector('a[href="mentions-legales.html"]')) {
+        const legal = document.createElement('a');
+        legal.href = 'mentions-legales.html';
+        legal.textContent = 'MENTIONS LÉGALES ↗';
+        footer.append(legal);
+      }
       const settings = document.createElement('button');
       settings.type = 'button';
       settings.className = 'analytics-settings';
@@ -140,6 +222,8 @@
     if (!consentIsCurrent) {
       localStorage.removeItem(consentKey);
       localStorage.removeItem(consentAtKey);
+      localStorage.removeItem(choicesKey);
+      localStorage.removeItem(mediaKey);
       createConsentBanner();
     } else if (consent === 'accepted') startMeasurement();
   });
