@@ -18,6 +18,13 @@ const defaults={
   'join-title':'Le changement a besoin\n<em>de toutes les bonnes volontés.</em>',
   'join-text':'Tu veux aider à résoudre un problème qui compte ? Écris-nous, partage ton idée ou rejoins l’effort.',
   'contact-email':'bonjour@revolutionproject.fr',
+  'donate-title':'Soutenir le projet',
+  'donate-intro':'Si tu veux nous aider, tu peux effectuer un virement bancaire directement depuis ton application bancaire. Aucun paiement par carte n’est collecté sur ce site.',
+  'donate-enabled':'non',
+  'donate-beneficiary':'',
+  'donate-iban':'',
+  'donate-bic':'',
+  'donate-reference':'Soutien RV RevolutionProject',
   'footer-motto':'FAIRE PLACE AU POSSIBLE.'
 };
 function getContent(){try{return {...defaults,...JSON.parse(localStorage.getItem('rv-content')||'{}')}}catch{return defaults}}

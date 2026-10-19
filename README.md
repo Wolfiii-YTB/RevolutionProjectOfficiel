@@ -40,3 +40,7 @@ Le site utilise Supabase pour partager les textes, annonces, avancées, progress
 
 Le site démarre avec son contenu par défaut et des listes publiques vides. Les contenus enregistrés uniquement dans un ancien navigateur ne sont pas importés automatiquement : importe le fichier JSON depuis le panel après la configuration. Les demandes de contact sont partagées dans Supabase ; elles ne contiennent aucun secret d’administration.
 
+
+## Soutien par virement direct
+
+La page `soutenir.html` propose uniquement un virement bancaire lancé par le visiteur depuis sa propre banque. Elle ne traite pas les cartes et ne passe pas par un prestataire de paiement. Dans le panel, l’onglet « Soutien » permet de saisir un bénéficiaire, un IBAN, un BIC facultatif et un motif, puis d’activer ou non l’affichage public. Les coordonnées publiées sont visibles par tous les visiteurs. La page ne confirme pas automatiquement les virements reçus.
