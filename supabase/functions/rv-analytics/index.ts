@@ -5,7 +5,9 @@ const allowedDevices = new Set(['Mobile', 'Tablette', 'Ordinateur', 'Inconnu']);
 
 Deno.serve(async (request) => {
   const origin = request.headers.get('origin') || '';
-  const allowedOrigins = (Deno.env.get('SITE_ORIGINS') || '').split(',').map((value) => value.trim()).filter(Boolean);
+  const allowedOrigins = (Deno.env.get('SITE_ORIGINS') || 'https://wolfiii-ytb.github.io')
+    .split(',').map((value) => value.trim()).filter(Boolean)
+    .map((value) => { try { return new URL(value).origin; } catch { return ''; } });
   const originAllowed = allowedOrigins.includes(origin);
   const corsHeaders: Record<string, string> = {
     'Vary': 'Origin',
@@ -13,7 +15,10 @@ Deno.serve(async (request) => {
     'Access-Control-Allow-Headers': 'content-type, apikey',
     'Cache-Control': 'no-store',
   };
-  if (originAllowed) corsHeaders['Access-Control-Allow-Origin'] = origin;
+  if (originAllowed) {
+    corsHeaders['Access-Control-Allow-Origin'] = origin;
+    corsHeaders['Access-Control-Max-Age'] = '86400';
+  }
   if (request.method === 'OPTIONS') return new Response(null, { status: originAllowed ? 204 : 403, headers: corsHeaders });
   if (request.method !== 'POST' || !originAllowed) return new Response('Forbidden', { status: 403, headers: corsHeaders });
 
@@ -43,7 +48,7 @@ Deno.serve(async (request) => {
   if (!visitorIp || visitorIp.length > 64) return new Response('Visitor IP unavailable', { status: 400, headers: corsHeaders });
 
   const projectUrl = Deno.env.get('SUPABASE_URL');
-  let secretKey = '';
+  let secretKey = Deno.env.get('RV_ANALYTICS_SECRET_KEY') || '';
   try { secretKey = JSON.parse(Deno.env.get('SUPABASE_SECRET_KEYS') || '{}').default || ''; } catch {}
   const serviceKey = secretKey || Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
   if (!projectUrl || !serviceKey) return new Response('Analytics is not configured', { status: 503, headers: corsHeaders });
@@ -126,6 +131,9 @@ Deno.serve(async (request) => {
       device,
     }),
   });
-  if (!insert.ok) return new Response('Could not record analytics', { status: 503, headers: corsHeaders });
+  if (!insert.ok) {
+    console.error('Analytics database insert failed', insert.status, (await insert.text()).slice(0, 500));
+    return new Response('Could not record analytics', { status: 503, headers: corsHeaders });
+  }
   return new Response(null, { status: 204, headers: corsHeaders });
 });

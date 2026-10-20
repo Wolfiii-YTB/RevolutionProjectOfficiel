@@ -33,7 +33,7 @@
       if(!rows.length){const empty=document.createElement('p');empty.className='insight-empty';empty.textContent='Aucune visite avec consentement pour le moment.';visitorHost.append(empty)}
       else rows.slice(0,100).forEach((row)=>{const item=document.createElement('article');item.className='visitor-row';const title=document.createElement('strong');title.textContent=`${row.visitor_ip} · ${[row.city,row.region,row.country].filter(Boolean).join(', ')||'Localisation inconnue'}`;const detail=document.createElement('p');detail.textContent=`${formatDate(row.created_at)} · ${row.page} · ${formatTime(row.duration_seconds)} · ${row.device}`;item.append(title,detail);visitorHost.append(item)});
       status.textContent = `${rows.length} visite(s) consentie(s) sur les 30 derniers jours. ${all.length > rows.length ? `${all.length-rows.length} enregistrement(s) plus ancien(s) non affiché(s).` : ''}`;
-    } catch (error) { console.error(error); status.textContent='Statistiques indisponibles. Vérifie que le SQL et la fonction analytics ont été déployés.'; }
+    } catch (error) { console.error(error); status.textContent=`Statistiques indisponibles : ${String(error?.message||'erreur inconnue').slice(0,220)}. Vérifie le SQL, les droits admin et le déploiement Supabase.`; }
   }
 
   async function loadAudit() {

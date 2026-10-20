@@ -3,6 +3,7 @@
   const PROJECT_URL = 'https://gkshnhdegrfscficfjye.supabase.co';
   const PUBLISHABLE_KEY = 'sb_publishable_x_MUqOjkxaOl4j7Ux6k4MQ_cSBvWJAr';
   const SESSION_KEY = 'rv-supabase-session';
+  const CONTENT_SYNC_KEY = 'rv-content-last-sync';
   const CONTENT_KEYS = ['rv-content','rv-pages','rv-announcements','rv-devlogs','rv-progressions','rv-videos','rv-roadmap'];
 
   // Keep the Auth token for this browser tab only; never persist it across restarts.
@@ -33,10 +34,20 @@
     return { content: read('rv-content') || {}, pages: read('rv-pages') || [], announcements: read('rv-announcements') || [], devlogs: read('rv-devlogs') || [], progressions, milestones: progressions, videos: read('rv-videos') || { channel: '', videos: [] }, roadmap: read('rv-roadmap') || [] };
   }
   async function load() {
+    // On public pages, reuse the shared content already cached in localStorage
+    // for a short period. Admin always fetches the newest copy on entry.
+    const hasCachedContent = CONTENT_KEYS.some(key => localStorage.getItem(key) !== null);
+    const recentSync = Number(sessionStorage.getItem(CONTENT_SYNC_KEY) || 0);
+    if (!/admin\.html$/i.test(location.pathname) && hasCachedContent && Date.now() - recentSync < 30000) return null;
     try {
-      const rows = await request('/rest/v1/site_state?select=payload&id=eq.1');
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 8000);
+      let rows;
+      try { rows = await request('/rest/v1/site_state?select=payload&id=eq.1', { signal: controller.signal }); }
+      finally { clearTimeout(timeout); }
       if (Array.isArray(rows) && rows[0]?.payload) applyBundle(rows[0].payload);
       else applyBundle({});
+      sessionStorage.setItem(CONTENT_SYNC_KEY, String(Date.now()));
       return Array.isArray(rows) && rows[0] ? rows[0].payload : null;
     } catch (error) { console.warn('Supabase indisponible, utilisation du contenu déjà chargé.', error); return null; }
   }

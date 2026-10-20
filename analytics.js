@@ -178,6 +178,8 @@
         body: JSON.stringify(event),
         keepalive: true,
         mode: 'cors',
+      }).then(async (response) => {
+        if (!response.ok) throw new Error(`Supabase analytics (${response.status}): ${(await response.text()).slice(0, 180)}`);
       }).catch((error) => console.warn('Statistique RV non transmise.', error));
     };
     const finish = () => {

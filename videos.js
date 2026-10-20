@@ -1,4 +1,7 @@
-window.RVCloud.ready.then(() => {
+let refreshVideoMediaChoices = () => {};
+window.addEventListener('rv:consent-updated', () => refreshVideoMediaChoices());
+
+function renderVideos() {
   const list = document.getElementById('youtube-videos');
   const live = document.getElementById('youtube-live');
   const empty = document.getElementById('youtube-empty');
@@ -7,7 +10,10 @@ window.RVCloud.ready.then(() => {
   const channelMark = document.querySelector('.channel-banner-mark');
   let data = { name: '', channel: '', avatar: '', videos: [] };
   const previews = [];
+  if (!list || !live || !empty) return;
 
+  list.replaceChildren();
+  live.replaceChildren();
   try {
     const saved = JSON.parse(localStorage.getItem('rv-videos') || '{}');
     if (saved && typeof saved === 'object') data = { ...data, ...saved, videos: Array.isArray(saved.videos) ? saved.videos : [] };
@@ -189,5 +195,9 @@ window.RVCloud.ready.then(() => {
   renderGroup(list, regular);
   empty.hidden = entries.length > 0;
   applyMediaChoices();
-  window.addEventListener('rv:consent-updated', applyMediaChoices);
-});
+  refreshVideoMediaChoices = applyMediaChoices;
+}
+
+// Render the last known channel and videos at once; update after cloud sync.
+renderVideos();
+window.RVCloud.ready.then(renderVideos);
