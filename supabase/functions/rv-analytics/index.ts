@@ -52,66 +52,67 @@ Deno.serve(async (request) => {
   let region = '';
   let city = '';
   const restHeaders = { 'apikey': serviceKey, 'Authorization': `Bearer ${serviceKey}` };
-  try {
-    // Reuse a location already recorded for this IP so every page view does not
-    // consume another GeoIP request from the provider's daily allowance.
-    const cachedUrl = new URL(`${projectUrl}/rest/v1/analytics_events`);
-    cachedUrl.searchParams.set('select', 'country,region,city');
-    cachedUrl.searchParams.set('visitor_ip', `eq.${visitorIp}`);
-    cachedUrl.searchParams.set('order', 'created_at.desc');
-    cachedUrl.searchParams.set('limit', '1');
-    const cachedResponse = await fetch(cachedUrl, { headers: restHeaders });
-    if (!cachedResponse.ok) return new Response('Could not check saved location', { status: 503, headers: corsHeaders });
-    const cachedRows = await cachedResponse.json();
-    const cached = Array.isArray(cachedRows) ? cachedRows[0] : null;
-    if (cached?.country && cached.country !== 'Inconnue') {
-      country = String(cached.country).slice(0, 80);
-      region = String(cached.region || '').slice(0, 100);
-      city = String(cached.city || '').slice(0, 100);
-    } else {
-      const quotaResponse = await fetch(`${projectUrl}/rest/v1/rpc/consume_geoip_limit`, {
-        method: 'POST',
-        headers: { ...restHeaders, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ p_ip: visitorIp }),
-      });
-      if (!quotaResponse.ok) return new Response('Analytics quota check failed', { status: 503, headers: corsHeaders });
-      if (await quotaResponse.json() !== true) return new Response('Rate limit reached', { status: 429, headers: corsHeaders });
-
-      const geoKey = Deno.env.get('IPWHO_API_KEY');
-      if (!geoKey) return new Response('GeoIP is not configured', { status: 503, headers: corsHeaders });
-      const endpoint = new URL(`https://api.ipwho.org/ip/${encodeURIComponent(visitorIp)}`);
-      endpoint.searchParams.set('apiKey', geoKey);
-      endpoint.searchParams.set('get', 'geoLocation');
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 3500);
-      let response: Response;
-      try {
-        response = await fetch(endpoint, { signal: controller.signal, headers: { 'Accept': 'application/json' } });
-      } finally {
-        clearTimeout(timeout);
-      }
-      if (response.ok) {
-        const result = await response.json();
-        const geo = result?.data?.geoLocation;
-        if (result?.success && geo) {
-          country = String(geo.country || country).slice(0, 80);
-          region = String(geo.region || '').slice(0, 100);
-          city = String(geo.city || '').slice(0, 100);
+  const geoKey = Deno.env.get('IPWHO_API_KEY');
+  // GeoIP enriches a measurement but must never prevent a consented visit
+  // from being recorded. Reuse a known location; on any lookup/quota/provider
+  // failure, keep the event with a generic location instead.
+  if (geoKey) {
+    try {
+      const cachedUrl = new URL(`${projectUrl}/rest/v1/analytics_events`);
+      cachedUrl.searchParams.set('select', 'country,region,city');
+      cachedUrl.searchParams.set('visitor_ip', `eq.${visitorIp}`);
+      cachedUrl.searchParams.set('country', 'neq.Inconnue');
+      cachedUrl.searchParams.set('order', 'created_at.desc');
+      cachedUrl.searchParams.set('limit', '1');
+      const cachedResponse = await fetch(cachedUrl, { headers: restHeaders });
+      const cachedRows = cachedResponse.ok ? await cachedResponse.json() : [];
+      const cached = Array.isArray(cachedRows) ? cachedRows[0] : null;
+      if (cached?.country) {
+        country = String(cached.country).slice(0, 80);
+        region = String(cached.region || '').slice(0, 100);
+        city = String(cached.city || '').slice(0, 100);
+      } else {
+        const quotaResponse = await fetch(`${projectUrl}/rest/v1/rpc/consume_geoip_limit`, {
+          method: 'POST',
+          headers: { ...restHeaders, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ p_ip: visitorIp }),
+        });
+        if (quotaResponse.ok && await quotaResponse.json() === true) {
+          const lookup = new URL(`https://api.ipwho.org/ip/${encodeURIComponent(visitorIp)}`);
+          lookup.searchParams.set('apiKey', geoKey);
+          lookup.searchParams.set('get', 'geoLocation');
+          const controller = new AbortController();
+          const timeout = setTimeout(() => controller.abort(), 2500);
+          try {
+            const response = await fetch(lookup, { signal: controller.signal, headers: { 'Accept': 'application/json' } });
+            if (response.ok) {
+              const result = await response.json();
+              const geo = result?.data?.geoLocation;
+              if (result?.success && geo) {
+                country = String(geo.country || country).slice(0, 80);
+                region = String(geo.region || '').slice(0, 100);
+                city = String(geo.city || '').slice(0, 100);
+              }
+            }
+          } finally {
+            clearTimeout(timeout);
+          }
         }
       }
+    } catch {
+      // A GeoIP outage should not discard an otherwise valid analytics event.
     }
-  } catch {
-    return new Response('Location lookup unavailable', { status: 503, headers: corsHeaders });
   }
-  if (country === 'Inconnue') return new Response('GeoIP lookup returned no location', { status: 503, headers: corsHeaders });
 
-  const insert = await fetch(`${projectUrl}/rest/v1/analytics_events`, {
+  const insertUrl = new URL(`${projectUrl}/rest/v1/analytics_events`);
+  insertUrl.searchParams.set('on_conflict', 'id');
+  const insert = await fetch(insertUrl, {
     method: 'POST',
     headers: {
       'apikey': serviceKey,
       'Authorization': `Bearer ${serviceKey}`,
       'Content-Type': 'application/json',
-      'Prefer': 'return=minimal',
+      'Prefer': 'resolution=merge-duplicates,return=minimal',
     },
     body: JSON.stringify({
       id: eventId,

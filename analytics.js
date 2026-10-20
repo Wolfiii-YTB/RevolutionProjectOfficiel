@@ -153,6 +153,7 @@
     let activeMs = 0;
     let activeSince = document.visibilityState === 'visible' ? performance.now() : null;
     let sent = false;
+    const eventId = makeId();
     const updateVisibility = () => {
       if (document.visibilityState === 'hidden' && activeSince !== null) {
         activeMs += performance.now() - activeSince;
@@ -161,16 +162,14 @@
         activeSince = performance.now();
       }
     };
-    const finish = () => {
-      if (sent || localStorage.getItem(consentKey) !== 'accepted') return;
-      sent = true;
-      if (activeSince !== null) activeMs += performance.now() - activeSince;
+    const saveMeasurement = (durationSeconds) => {
+      if (localStorage.getItem(consentKey) !== 'accepted') return;
       const event = {
         consent: true,
-        eventId: makeId(),
+        eventId,
         sessionId,
         page,
-        durationSeconds: Math.min(21600, Math.max(0, Math.round(activeMs / 1000))),
+        durationSeconds: Math.min(21600, Math.max(0, Math.round(durationSeconds))),
         device: getDevice(),
       };
       fetch(endpoint, {
@@ -179,9 +178,19 @@
         body: JSON.stringify(event),
         keepalive: true,
         mode: 'cors',
-      }).catch(() => {});
+      }).catch((error) => console.warn('Statistique RV non transmise.', error));
+    };
+    const finish = () => {
+      if (sent || localStorage.getItem(consentKey) !== 'accepted') return;
+      sent = true;
+      if (activeSince !== null) activeMs += performance.now() - activeSince;
+      saveMeasurement(activeMs / 1000);
     };
     document.addEventListener('visibilitychange', updateVisibility);
+    // Record the page as soon as consent is given; pagehide later upserts the
+    // same event with the final active duration. This avoids losing visits
+    // when the browser closes before its first unload request can complete.
+    saveMeasurement(0);
     window.addEventListener('pagehide', finish, { once: true });
   }
 
