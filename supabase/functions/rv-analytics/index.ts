@@ -43,9 +43,18 @@ Deno.serve(async (request) => {
     return new Response('Invalid analytics event', { status: 400, headers: corsHeaders });
   }
 
-  // Only trust the IP supplied by Supabase's edge gateway; never accept it from the browser payload.
-  const visitorIp = request.headers.get('cf-connecting-ip');
-  if (!visitorIp || visitorIp.length > 64) return new Response('Visitor IP unavailable', { status: 400, headers: corsHeaders });
+  // Use an IP header supplied by the edge gateway, never a value from the
+  // browser payload. Supabase deployments do not all expose the same proxy
+  // header, so support the common gateway variants.
+  const forwardedFor = request.headers.get('x-forwarded-for') || '';
+  const visitorIp = (request.headers.get('cf-connecting-ip')
+    || request.headers.get('x-real-ip')
+    || forwardedFor.split(',')[0]
+    || '').trim();
+  if (!visitorIp || visitorIp.length > 64) {
+    console.error('Analytics request rejected: edge gateway did not provide a visitor IP header');
+    return new Response('Visitor IP unavailable', { status: 400, headers: corsHeaders });
+  }
 
   const projectUrl = Deno.env.get('SUPABASE_URL');
   let secretKey = Deno.env.get('RV_ANALYTICS_SECRET_KEY') || '';
