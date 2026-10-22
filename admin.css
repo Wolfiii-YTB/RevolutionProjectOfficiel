@@ -57,3 +57,5 @@ html[data-theme="dark"] .progression-editor{background:#1b211a;border-color:#728
 html[data-theme="dark"] .video-editor-card{background:#222720;border-color:#464a40}
 html[data-theme="dark"] .editor select{background:#1a1d19;color:#f0efe8;border-color:#45483f}
 .channel-avatar-preview{margin-top:10px;max-width:100%}.video-editor-card{overflow:hidden}
+
+.shop-product-editor{background:#eeece5;padding:17px;margin-bottom:12px}.shop-product-editor .announcement-preview{display:block;width:min(100%,360px);height:auto;max-height:320px;object-fit:contain;margin:8px 0}.shop-admin-section h3{margin:25px 0 14px}html[data-theme="dark"] .shop-product-editor{background:#222620}

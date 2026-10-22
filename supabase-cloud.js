@@ -4,7 +4,7 @@
   const PUBLISHABLE_KEY = 'sb_publishable_x_MUqOjkxaOl4j7Ux6k4MQ_cSBvWJAr';
   const SESSION_KEY = 'rv-supabase-session';
   const CONTENT_SYNC_KEY = 'rv-content-last-sync';
-  const CONTENT_KEYS = ['rv-content','rv-pages','rv-announcements','rv-devlogs','rv-progressions','rv-videos','rv-roadmap'];
+  const CONTENT_KEYS = ['rv-content','rv-pages','rv-announcements','rv-devlogs','rv-progressions','rv-videos','rv-roadmap','rv-shop'];
 
   // Keep the Auth token for this browser tab only; never persist it across restarts.
   function session() { try { return JSON.parse(sessionStorage.getItem(SESSION_KEY) || 'null'); } catch { return null; } }
@@ -27,11 +27,12 @@
     localStorage.setItem('rv-progressions', JSON.stringify(Array.isArray(bundle.progressions) ? bundle.progressions : (Array.isArray(bundle.milestones) ? bundle.milestones : [])));
     localStorage.setItem('rv-videos', JSON.stringify(bundle.videos && typeof bundle.videos === 'object' ? bundle.videos : { channel: '', videos: [] }));
     localStorage.setItem('rv-roadmap', JSON.stringify(Array.isArray(bundle.roadmap) ? bundle.roadmap : []));
+    localStorage.setItem('rv-shop', JSON.stringify(bundle.shop && typeof bundle.shop === 'object' ? bundle.shop : { enabled: false, title: 'La boutique arrive bientôt.', intro: '', closedMessage: 'La boutique est en préparation. Les articles seront présentés ici dès son ouverture.', products: [] }));
   }
   function collectBundle() {
     const read = key => { try { return JSON.parse(localStorage.getItem(key) || 'null'); } catch { return null; } };
     const progressions = read('rv-progressions') || [];
-    return { content: read('rv-content') || {}, pages: read('rv-pages') || [], announcements: read('rv-announcements') || [], devlogs: read('rv-devlogs') || [], progressions, milestones: progressions, videos: read('rv-videos') || { channel: '', videos: [] }, roadmap: read('rv-roadmap') || [] };
+    return { content: read('rv-content') || {}, pages: read('rv-pages') || [], announcements: read('rv-announcements') || [], devlogs: read('rv-devlogs') || [], progressions, milestones: progressions, videos: read('rv-videos') || { channel: '', videos: [] }, roadmap: read('rv-roadmap') || [], shop: read('rv-shop') || { enabled: false, title: 'La boutique arrive bientôt.', intro: '', closedMessage: 'La boutique est en préparation. Les articles seront présentés ici dès son ouverture.', products: [] } };
   }
   async function load() {
     // On public pages, reuse the shared content already cached in localStorage
@@ -58,8 +59,8 @@
     const rows = await request('/rest/v1/site_state?select=payload&id=eq.1', {}, current.access_token);
     const saved = Array.isArray(rows) ? rows[0]?.payload : null;
     const stable = value => Array.isArray(value) ? value.map(stable) : value && typeof value === 'object' ? Object.fromEntries(Object.keys(value).sort().map(key => [key, stable(value[key])])) : value;
-    if (!saved || JSON.stringify(stable(saved.progressions ?? saved.milestones ?? [])) !== JSON.stringify(stable(bundle.progressions ?? bundle.milestones ?? []))) {
-      throw new Error('Supabase a répondu, mais la nouvelle progression n’est pas retrouvée après relecture. Vérifie les droits d’écriture sur site_state.');
+    if (!saved || JSON.stringify(stable(saved.progressions ?? saved.milestones ?? [])) !== JSON.stringify(stable(bundle.progressions ?? bundle.milestones ?? [])) || JSON.stringify(stable(saved.shop || {})) !== JSON.stringify(stable(bundle.shop || {}))) {
+      throw new Error('Supabase a répondu, mais le contenu publié (progression ou boutique) n’est pas retrouvé après relecture. Vérifie les droits d’écriture sur site_state.');
     }
     applyBundle(saved);
     return true;

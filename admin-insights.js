@@ -2,7 +2,7 @@
   const status = document.getElementById('analytics-status');
   const auditStatus = document.getElementById('admin-audit-status');
   if (!status || !auditStatus) return;
-  const labels = { content: 'Textes du site', pages: 'Pages', announcements: 'Projets', devlogs: 'Avancées', progressions: 'Progressions', milestones: 'Étapes', videos: 'Vidéos', roadmap: 'Schéma accueil' };
+  const labels = { content: 'Textes du site', pages: 'Pages', announcements: 'Projets', devlogs: 'Avancées', progressions: 'Progressions', milestones: 'Étapes', videos: 'Vidéos', roadmap: 'Schéma accueil', shop: 'Boutique' };
   const $ = (id) => document.getElementById(id);
   const formatDate = (value) => { const date = new Date(value); return Number.isNaN(date.valueOf()) ? 'Date inconnue' : new Intl.DateTimeFormat('fr-FR', { dateStyle: 'medium', timeStyle: 'short' }).format(date); };
   const formatTime = (seconds) => { const total = Math.round(Number(seconds) || 0); if (total < 60) return `${total} s`; const minutes = Math.floor(total / 60); return `${minutes} min${total % 60 ? ` ${total % 60} s` : ''}`; };
