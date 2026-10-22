@@ -6,6 +6,7 @@
   const choicesKey = 'rv-analytics-choices';
   const mediaKey = 'rv-youtube-media-consent';
   const sessionKey = 'rv-analytics-session';
+  const deliveryStatusKey = 'rv-analytics-delivery-status';
   const endpoint = 'https://gkshnhdegrfscficfjye.supabase.co/functions/v1/rv-analytics';
   const publishableKey = 'sb_publishable_x_MUqOjkxaOl4j7Ux6k4MQ_cSBvWJAr';
   const pageNames = {
@@ -113,7 +114,16 @@
     saveChoices.hidden = true;
     saveChoices.addEventListener('click', () => setConsent(analyticsChoice.checked ? 'accepted' : 'refused', mediaChoice.checked));
     actions.append(reject, customize, accept, saveChoices);
-    banner.append(copy, actions);
+    const deliveryStatus = document.createElement('p');
+    deliveryStatus.id = 'rv-analytics-delivery-status';
+    deliveryStatus.className = 'analytics-delivery-status';
+    deliveryStatus.setAttribute('role', 'status');
+    deliveryStatus.setAttribute('aria-live', 'polite');
+    try {
+      const savedStatus = JSON.parse(localStorage.getItem(deliveryStatusKey) || 'null');
+      if (savedStatus?.message) deliveryStatus.textContent = savedStatus.message;
+    } catch {}
+    banner.append(copy, actions, deliveryStatus);
     document.body.append(banner);
     return banner;
   }
@@ -142,6 +152,13 @@
     return 'Ordinateur';
   }
 
+  function updateDeliveryStatus(message) {
+    const record = { message, at: new Date().toISOString() };
+    try { localStorage.setItem(deliveryStatusKey, JSON.stringify(record)); } catch {}
+    const element = document.getElementById('rv-analytics-delivery-status');
+    if (element) element.textContent = message;
+  }
+
   function startMeasurement() {
     if (window.__rvAnalyticsStarted) return;
     window.__rvAnalyticsStarted = true;
@@ -162,8 +179,8 @@
         activeSince = performance.now();
       }
     };
-    const saveMeasurement = (durationSeconds) => {
-      if (localStorage.getItem(consentKey) !== 'accepted') return;
+    const saveMeasurement = (durationSeconds, attempt = 0) => {
+      if (localStorage.getItem(consentKey) !== 'accepted') return Promise.resolve(false);
       const event = {
         consent: true,
         eventId,
@@ -172,15 +189,30 @@
         durationSeconds: Math.min(21600, Math.max(0, Math.round(durationSeconds))),
         device: getDevice(),
       };
-      fetch(endpoint, {
+      updateDeliveryStatus('Envoi des statistiques après consentement…');
+      return fetch(endpoint, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'apikey': publishableKey },
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': publishableKey,
+        },
         body: JSON.stringify(event),
         keepalive: true,
         mode: 'cors',
       }).then(async (response) => {
         if (!response.ok) throw new Error(`Supabase analytics (${response.status}): ${(await response.text()).slice(0, 180)}`);
-      }).catch((error) => console.warn('Statistique RV non transmise.', error));
+        updateDeliveryStatus('Statistiques envoyées. La mise à jour du panel peut nécessiter un rafraîchissement.');
+        return true;
+      }).catch((error) => {
+        console.warn('Statistique RV non transmise.', error);
+        if (attempt < 2 && localStorage.getItem(consentKey) === 'accepted') {
+          const delay = attempt === 0 ? 1200 : 3500;
+          setTimeout(() => saveMeasurement(durationSeconds, attempt + 1), delay);
+        } else {
+          updateDeliveryStatus(`Échec d’envoi des statistiques : ${String(error?.message || 'erreur réseau').slice(0, 160)}`);
+        }
+        return false;
+      });
     };
     const finish = () => {
       if (sent || localStorage.getItem(consentKey) !== 'accepted') return;

@@ -57,15 +57,22 @@ Deno.serve(async (request) => {
   }
 
   const projectUrl = Deno.env.get('SUPABASE_URL');
-  let secretKey = Deno.env.get('RV_ANALYTICS_SECRET_KEY') || '';
-  try { secretKey = JSON.parse(Deno.env.get('SUPABASE_SECRET_KEYS') || '{}').default || ''; } catch {}
-  const serviceKey = secretKey || Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+  let injectedSecretKey = '';
+  try { injectedSecretKey = JSON.parse(Deno.env.get('SUPABASE_SECRET_KEYS') || '{}').default || ''; } catch {}
+  // Prefer the explicitly configured server secret. The previous assignment
+  // overwrote RV_ANALYTICS_SECRET_KEY with an empty injected-key value whenever
+  // SUPABASE_SECRET_KEYS existed, which made valid deployments return 503.
+  const serviceKey = Deno.env.get('RV_ANALYTICS_SECRET_KEY') || injectedSecretKey || Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
   if (!projectUrl || !serviceKey) return new Response('Analytics is not configured', { status: 503, headers: corsHeaders });
 
   let country = 'Inconnue';
   let region = '';
   let city = '';
-  const restHeaders = { 'apikey': serviceKey, 'Authorization': `Bearer ${serviceKey}` };
+  // Modern sb_secret_* keys are API keys, not JWTs: send them only as apikey.
+  // The previous Bearer header made PostgREST parse the secret as a JWT and
+  // reject reads/inserts with Invalid JWT. Legacy service-role keys also work
+  // in apikey, so the same request shape supports both key formats.
+  const restHeaders = { 'apikey': serviceKey };
   const geoKey = Deno.env.get('IPWHO_API_KEY');
   // GeoIP enriches a measurement but must never prevent a consented visit
   // from being recorded. Reuse a known location; on any lookup/quota/provider
@@ -123,8 +130,7 @@ Deno.serve(async (request) => {
   const insert = await fetch(insertUrl, {
     method: 'POST',
     headers: {
-      'apikey': serviceKey,
-      'Authorization': `Bearer ${serviceKey}`,
+      ...restHeaders,
       'Content-Type': 'application/json',
       'Prefer': 'resolution=merge-duplicates,return=minimal',
     },

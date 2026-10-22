@@ -55,7 +55,13 @@
     const current = session();
     if (!current?.access_token) throw new Error('Connecte-toi au panel pour publier le contenu.');
     await request('/rest/v1/site_state?on_conflict=id', { method: 'POST', headers: { Prefer: 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify({ id: 1, payload: bundle }) }, current.access_token);
-    applyBundle(bundle);
+    const rows = await request('/rest/v1/site_state?select=payload&id=eq.1', {}, current.access_token);
+    const saved = Array.isArray(rows) ? rows[0]?.payload : null;
+    const stable = value => Array.isArray(value) ? value.map(stable) : value && typeof value === 'object' ? Object.fromEntries(Object.keys(value).sort().map(key => [key, stable(value[key])])) : value;
+    if (!saved || JSON.stringify(stable(saved.progressions ?? saved.milestones ?? [])) !== JSON.stringify(stable(bundle.progressions ?? bundle.milestones ?? []))) {
+      throw new Error('Supabase a répondu, mais la nouvelle progression n’est pas retrouvée après relecture. Vérifie les droits d’écriture sur site_state.');
+    }
+    applyBundle(saved);
     return true;
   }
   async function submitContactRequest(record) {
@@ -110,5 +116,8 @@
     try { await request('/auth/v1/user', {}, current.access_token); return true; }
     catch { saveSession(null); return false; }
   }
-  window.RVCloud = { ready: load(), load, save, signIn, signOut, restoreSession, applyBundle, collectBundle, submitContactRequest, listContactRequests, deleteContactRequest, clearContactRequests, listAdminAuditLog, listAnalytics, contentKeys: CONTENT_KEYS };
+  // Do not start an anonymous content fetch on the admin page. It can finish
+  // after login and replace the editor's freshly loaded state while it is in use.
+  const ready = /admin\.html$/i.test(location.pathname) ? Promise.resolve(null) : load();
+  window.RVCloud = { ready, load, save, signIn, signOut, restoreSession, applyBundle, collectBundle, submitContactRequest, listContactRequests, deleteContactRequest, clearContactRequests, listAdminAuditLog, listAnalytics, contentKeys: CONTENT_KEYS };
 })();
