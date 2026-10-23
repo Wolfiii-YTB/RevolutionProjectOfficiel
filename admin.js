@@ -1,7 +1,9 @@
 const form=document.getElementById('editor'),status=document.getElementById('status'),loginForm=document.getElementById('login-form');
-function enableFrenchProofing(root=form){root.querySelectorAll('input:not([type]),input[type="text"],input[type="search"],textarea').forEach(field=>{field.lang='fr';field.spellcheck=true;field.setAttribute('autocorrect','on')})}
+function enableFrenchProofing(root=form){root.querySelectorAll('input:not([type]),input[type="text"],input[type="search"],textarea,[contenteditable="true"]').forEach(field=>{field.lang='fr-FR';field.spellcheck=true;field.setAttribute('autocorrect','on')})}
 enableFrenchProofing();
 new MutationObserver(records=>records.forEach(record=>record.addedNodes.forEach(node=>{if(node.nodeType===Node.ELEMENT_NODE)enableFrenchProofing(node)}))).observe(form,{childList:true,subtree:true});
+const proofingButton=document.getElementById('enable-proofing'),proofingStatus=document.getElementById('proofing-status');
+if(proofingButton)proofingButton.addEventListener('click',()=>{enableFrenchProofing(form);const count=form.querySelectorAll('input:not([type]),input[type="text"],input[type="search"],textarea,[contenteditable="true"]').length;if(proofingStatus)proofingStatus.textContent=`Correcteur du navigateur réactivé sur ${count} champs. Les soulignements apparaissent pendant la saisie si le dictionnaire français est activé dans le navigateur.`;proofingButton.textContent='Correcteur activé ✓';proofingButton.setAttribute('aria-pressed','true')});
 function readSaved(){try{return JSON.parse(localStorage.getItem('rv-content')||'{}')}catch{return {}}}
 const emptyShop={enabled:false,title:'La boutique arrive bientôt.',intro:'',closedMessage:'La boutique est en préparation. Les articles seront présentés ici dès son ouverture.',products:[]};
 function readShop(){try{const value=JSON.parse(localStorage.getItem('rv-shop')||'null');return value&&typeof value==='object'?{...emptyShop,...value,products:Array.isArray(value.products)?value.products:[]}:{...emptyShop,products:[]}}catch{return{...emptyShop,products:[]}}}
