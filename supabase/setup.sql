@@ -136,7 +136,9 @@ alter table public.analytics_events add constraint analytics_events_page_check
 alter table public.analytics_events enable row level security;
 revoke all on public.analytics_events from anon, authenticated;
 grant select on public.analytics_events to authenticated;
-grant insert on public.analytics_events to service_role;
+-- The Edge Function upserts each page visit: it inserts at consent time,
+-- then updates the same event with the final active duration on page exit.
+grant insert, update on public.analytics_events to service_role;
 drop policy if exists "Only listed admin can read analytics" on public.analytics_events;
 create policy "Only listed admin can read analytics" on public.analytics_events
   for select to authenticated using ((select private.is_site_admin()));

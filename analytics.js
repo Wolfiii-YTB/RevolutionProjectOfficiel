@@ -200,7 +200,12 @@
         keepalive: true,
         mode: 'cors',
       }).then(async (response) => {
-        if (!response.ok) throw new Error(`Supabase analytics (${response.status}): ${(await response.text()).slice(0, 180)}`);
+        if (!response.ok) {
+          const body = await response.text();
+          let detail = body;
+          try { const parsed = JSON.parse(body); detail = parsed.hint || parsed.error || body; } catch {}
+          throw new Error(`Supabase analytics (${response.status}): ${String(detail).slice(0, 180)}`);
+        }
         updateDeliveryStatus('Statistiques envoyées. La mise à jour du panel peut nécessiter un rafraîchissement.');
         return true;
       }).catch((error) => {

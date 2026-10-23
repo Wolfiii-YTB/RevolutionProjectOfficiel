@@ -147,8 +147,31 @@ Deno.serve(async (request) => {
     }),
   });
   if (!insert.ok) {
-    console.error('Analytics database insert failed', insert.status, (await insert.text()).slice(0, 500));
-    return new Response('Could not record analytics', { status: 503, headers: corsHeaders });
+    const detail = await insert.text();
+    let databaseCode = '';
+    let databaseMessage = '';
+    try {
+      const parsed = JSON.parse(detail);
+      databaseCode = String(parsed.code || '');
+      databaseMessage = String(parsed.message || '');
+    } catch {
+      databaseMessage = detail;
+    }
+    console.error('Analytics database upsert failed', insert.status, databaseCode, databaseMessage.slice(0, 400));
+    let hint = 'Supabase a refusé l’enregistrement. Vérifie les droits et les colonnes de analytics_events dans supabase/setup.sql.';
+    if (databaseCode === '42501' || /permission denied|row-level security/i.test(databaseMessage)) {
+      hint = 'Droit SQL manquant : réexécute supabase/setup.sql pour autoriser INSERT et UPDATE à service_role.';
+    } else if (databaseCode === '42P01' || /could not find the table|relation .* does not exist/i.test(databaseMessage)) {
+      hint = 'Table analytics_events introuvable : exécute supabase/setup.sql dans le SQL Editor.';
+    } else if (databaseCode === '42703' || /could not find the column|column .* does not exist/i.test(databaseMessage)) {
+      hint = 'Colonne analytics_events manquante : réexécute la configuration SQL à jour.';
+    } else if (databaseCode === '22P02' || databaseCode === '23514') {
+      hint = 'Une valeur ne correspond pas au schéma analytics_events : vérifie la fonction rv-analytics et le SQL déployés.';
+    }
+    return new Response(JSON.stringify({ error: 'Could not record analytics', hint }), {
+      status: 503,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json; charset=utf-8' },
+    });
   }
   return new Response(null, { status: 204, headers: corsHeaders });
 });
