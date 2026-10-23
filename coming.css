@@ -145,3 +145,7 @@ html[data-theme="light"] .back-to-top{background:#fff;color:#172c38;border-color
 html[data-theme="light"] .back-to-top:hover,html[data-theme="light"] .back-to-top:focus-visible{background:#80c938;color:#10202a}
 @media(max-width:700px){.back-to-top{right:max(14px,env(safe-area-inset-right));bottom:calc(14px + env(safe-area-inset-bottom));width:48px;height:48px}}
 @media(prefers-reduced-motion:reduce){.back-to-top{transition:none}}
+
+
+/* RV monogram logo */
+body.launch-page > header.launch-header > a.brand-link img{display:block;width:auto!important;height:58px!important;max-width:54px!important;max-height:58px!important;object-fit:contain}

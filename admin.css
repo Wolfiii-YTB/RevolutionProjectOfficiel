@@ -68,3 +68,7 @@ html[data-theme="dark"] .editor select{background:#1a1d19;color:#f0efe8;border-c
 
 
 .proofing-panel{display:flex;align-items:center;justify-content:space-between;gap:22px;margin:25px 0 30px;padding:20px 22px;border:1px solid #d4d4ca;border-left:4px solid #8ba533;border-radius:6px;background:#f0efe9}.proofing-copy{max-width:760px}.proofing-copy h2{margin:0 0 8px;font-size:22px;letter-spacing:-.02em}.proofing-copy p{margin:6px 0;font-size:14px;line-height:1.65}.proofing-copy .proofing-limit{font-size:13px;color:#696b62}.proofing-panel .add-page{flex:0 0 auto;min-height:48px;border-radius:5px;font-size:14px}html[data-theme="dark"] .proofing-panel{background:#222720;border-color:#464a40;border-left-color:#b8e878}html[data-theme="dark"] .proofing-copy .proofing-limit{color:#c0c1b7}@media(max-width:620px){.proofing-panel{align-items:stretch;flex-direction:column;gap:10px;margin:18px 0 24px;padding:16px}.proofing-copy h2{font-size:20px}.proofing-copy p{font-size:14px}.proofing-panel .add-page{width:100%}}
+
+
+/* RV monogram logo */
+body.admin-site .admin-nav .admin-logo{width:auto!important;height:58px!important;max-width:54px!important;max-height:58px!important;object-fit:contain}
