@@ -72,3 +72,6 @@ html[data-theme="dark"] .editor select{background:#1a1d19;color:#f0efe8;border-c
 
 /* RV monogram logo */
 body.admin-site .admin-nav .admin-logo{width:auto!important;height:58px!important;max-width:54px!important;max-height:58px!important;object-fit:contain}
+
+/* RV monogram logo */
+body.admin-site .admin-nav .admin-logo{width:92px!important;height:auto!important;max-width:92px!important;max-height:48px!important;object-fit:contain}

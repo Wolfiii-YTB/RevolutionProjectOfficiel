@@ -149,3 +149,6 @@ html[data-theme="light"] .back-to-top:hover,html[data-theme="light"] .back-to-to
 
 /* RV monogram logo */
 body.launch-page > header.launch-header > a.brand-link img{display:block;width:auto!important;height:58px!important;max-width:54px!important;max-height:58px!important;object-fit:contain}
+
+/* RV monogram logo */
+body.launch-page > header.launch-header > a.brand-link img{display:block;width:92px!important;height:auto!important;max-width:92px!important;max-height:48px!important;object-fit:contain}
