@@ -497,3 +497,174 @@ html[data-theme="dark"] .admin-tab:hover { background: rgba(213,242,221,.12); }
   html[data-theme="light"] .contact-section,
   html[data-theme="light"] .join-section { background-color: rgba(244,250,250,.97); }
 }
+
+/* Responsive pass across every public page and the admin workspace. */
+html { scroll-padding-top: 96px; }
+body { overflow-x: clip; }
+img, video, iframe, svg, canvas { max-width: 100%; }
+.launch-page main,
+.launch-page section,
+.launch-page article,
+.launch-page form,
+.launch-page nav,
+.admin-site main,
+.admin-site section,
+.admin-site article,
+.admin-site form { min-width: 0; }
+.launch-page :where(h1,h2,h3,p,a,button,label,span,small,strong,code,li,dd) { overflow-wrap: anywhere; }
+.launch-page :where(input,textarea,select,button),
+.admin-site :where(input,textarea,select,button) { max-width: 100%; }
+.launch-page :where(iframe,video) { display: block; width: 100%; }
+.launch-page :where(table) { display: block; max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.launch-page .launch-header-actions { -webkit-backdrop-filter: blur(24px) saturate(165%); backdrop-filter: blur(24px) saturate(165%); }
+.admin-site .admin-main { width: min(calc(100% - 40px), 1120px); }
+.admin-site .edit-section > *,
+.admin-site .proofing-panel > *,
+.admin-site .editor-actions > *,
+.admin-site .insights-columns > * { min-width: 0; }
+.admin-site .editor input,
+.admin-site .editor textarea,
+.admin-site .editor select,
+.admin-site .login-screen input { width: 100%; min-width: 0; }
+.admin-site .editor-actions { flex-wrap: wrap; align-items: center; }
+.admin-site .insights-metrics { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.admin-site .insights-columns { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+.admin-site .daily-row,
+.admin-site .visitor-row,
+.admin-site .audit-entry { min-width: 0; overflow-wrap: anywhere; }
+.contact-page-form,
+.contact-page-form label,
+.contact-page-form input,
+.contact-page-form textarea,
+.transfer-details,
+.transfer-details dd,
+.contact-aside-detail a { min-width: 0; max-width: 100%; }
+.contact-page-form input,
+.contact-page-form textarea,
+.contact-form input,
+.contact-form textarea { font-size: 16px; }
+.progression-public,
+.progression-public-heading,
+.progression-global,
+.milestone-content,
+.milestone-content > * { min-width: 0; max-width: 100%; }
+.channel-banner,
+.channel-banner-copy,
+.video-copy,
+.shop-product-body,
+.shop-product-heading,
+.announcement-body,
+.devlog-content { min-width: 0; }
+.site-footer-links { min-width: 0; }
+
+@media (max-width: 1024px) {
+  .admin-site .admin-main { width: min(calc(100% - 36px), 900px); }
+  .admin-site .insights-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .admin-site .insights-columns { gap: 14px; }
+  .admin-site .edit-section { padding-left: 20px; padding-right: 20px; }
+  .launch-page .announcement-card,
+  .launch-page .video-card,
+  .launch-page .shop-product { min-width: 0; }
+}
+
+@media (max-width: 720px) {
+  html { scroll-padding-top: 76px; }
+  body.launch-page { width: 100%; }
+  .launch-page > header.launch-header { z-index: 50; }
+  .launch-page .launch-header-actions {
+    max-height: calc(100svh - 76px);
+    max-height: calc(100dvh - 76px);
+    overflow-x: hidden;
+    overscroll-behavior: contain;
+    padding-bottom: max(14px, env(safe-area-inset-bottom));
+  }
+  .launch-page .launch-header-actions :where(a,button) { min-height: 46px; }
+  .launch-page :where(.announcements-main,.devlogs-main,.videos-main,.shop-main,.support-main,.contact-page-main,.progress-main) {
+    width: min(calc(100% - 32px), 680px);
+    max-width: 100%;
+    padding-top: clamp(34px, 7vw, 54px);
+    padding-bottom: max(40px, env(safe-area-inset-bottom));
+  }
+  .launch-page :where(.announcement-heading,.devlogs-heading,.videos-heading,.shop-heading,.support-heading,.contact-page-heading,.progress-heading) { max-width: 100%; }
+  .launch-page :where(.announcement-heading h1,.devlogs-heading h1,.videos-heading h1,.shop-heading h1,.support-heading h1,.contact-page-heading h1,.progress-heading h1) {
+    font-size: clamp(2.45rem, 10.8vw, 4.3rem);
+    line-height: 1.04;
+    letter-spacing: -.045em;
+  }
+  .launch-page :where(.announcement-heading > p,.devlogs-heading > p:last-child,.videos-heading > p:not(.devlogs-eyebrow),.shop-heading > p:last-child,.support-heading > p:last-child,.contact-page-heading > p:last-child,.progress-heading > p:last-child) {
+    font-size: clamp(1rem, 3.9vw, 1.125rem);
+    line-height: 1.7;
+  }
+  .launch-page :where(.announcements-list,.video-grid,.shop-products) { grid-template-columns: minmax(0, 1fr); }
+  .launch-page :where(.announcement-card,.devlog-entry,.video-card,.shop-product,.transfer-card,.paypal-card,.support-unavailable,.progression-public) { min-width: 0; }
+  .launch-page :where(.announcement-image,.devlog-image,.shop-product-image) { width: 100%; height: auto; max-height: min(72vh, 560px); object-fit: contain; }
+  .launch-page :where(.video-frame) { width: 100%; aspect-ratio: 16 / 9; height: auto; }
+  .launch-page :where(.channel-banner) { max-width: 100%; }
+  .launch-page :where(.contact-page-grid,.contact-page-form,.contact-form,.transfer-details) { width: 100%; }
+  .launch-page :where(.transfer-details > div) { grid-template-columns: minmax(0, 1fr); }
+  .launch-page :where(.transfer-iban) { align-items: stretch; }
+  .launch-page :where(.transfer-iban code,.contact-aside-detail a) { overflow-wrap: anywhere; word-break: break-word; }
+  .launch-page :where(.roadmap-section,.contact-section,.manifesto,.actions) { padding-left: clamp(18px, 5vw, 32px); padding-right: clamp(18px, 5vw, 32px); }
+  .launch-page .join-section { padding-left: clamp(20px, 6vw, 38px); padding-right: clamp(20px, 6vw, 38px); }
+  .launch-page .site-footer { padding-left: max(16px, env(safe-area-inset-left)); padding-right: max(16px, env(safe-area-inset-right)); }
+  .launch-page .analytics-consent {
+    left: max(10px, env(safe-area-inset-left));
+    right: max(10px, env(safe-area-inset-right));
+    bottom: max(10px, env(safe-area-inset-bottom));
+    max-height: calc(100svh - 20px);
+    max-height: calc(100dvh - 20px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  .launch-page .analytics-consent-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .launch-page .analytics-consent-actions > * { min-width: 0; white-space: normal; }
+  .admin-site .admin-main { width: calc(100% - 28px); padding: 26px 0 max(34px, env(safe-area-inset-bottom)); }
+  .admin-site .admin-nav { position: sticky; top: 5px; z-index: 30; flex-wrap: wrap; gap: 8px; }
+  .admin-site .admin-tabs { top: 6px; max-width: 100%; scrollbar-width: thin; overscroll-behavior-x: contain; }
+  .admin-site .admin-tab { flex: 0 0 auto; white-space: nowrap; }
+  .admin-site .insights-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+  .admin-site .insights-metrics article { padding: 14px; }
+  .admin-site .insights-columns { grid-template-columns: minmax(0, 1fr); }
+  .admin-site .editor-actions { position: static; display: grid; grid-template-columns: minmax(0, 1fr); }
+  .admin-site .editor-actions > * { width: 100%; justify-content: center; }
+  .admin-site .field-pair { grid-template-columns: minmax(0, 1fr); }
+  .admin-site .inbox-message-top { align-items: flex-start; flex-direction: column; }
+}
+
+@media (max-width: 420px) {
+  .launch-page :where(.announcements-main,.devlogs-main,.videos-main,.shop-main,.support-main,.contact-page-main,.progress-main) { width: calc(100% - 24px); }
+  .launch-page .launch-header { padding-left: max(12px, env(safe-area-inset-left)); padding-right: max(12px, env(safe-area-inset-right)); }
+  .launch-page .launch-header .brand-link img { width: clamp(118px, 39vw, 155px); }
+  .launch-page .launch-menu-toggle { flex-basis: 44px !important; width: 44px; min-width: 44px; height: 44px; }
+  .launch-page :where(.announcement-body,.video-copy,.shop-product-body) { padding: 16px; }
+  .launch-page :where(.announcement-body h2,.video-card h2,.shop-product-heading h2) { font-size: clamp(1.15rem, 6vw, 1.35rem); }
+  .launch-page .shop-product-heading { flex-wrap: wrap; gap: 8px 14px; }
+  .launch-page .empty-preview-grid { grid-template-columns: minmax(0, 1fr); }
+  .launch-page .transfer-card,
+  .launch-page .paypal-card,
+  .launch-page .support-unavailable { padding: 20px 16px; }
+  .launch-page .progression-public { padding: 16px 12px 8px; }
+  .launch-page .milestone-meta { flex-wrap: wrap; gap: 8px; }
+  .launch-page .site-footer-links { gap: 4px 10px; }
+  .launch-page .back-to-top { right: max(12px, env(safe-area-inset-right)); bottom: max(12px, env(safe-area-inset-bottom)); }
+  .admin-site .admin-main { width: calc(100% - 20px); }
+  .admin-site .admin-nav { margin-left: 6px; margin-right: 6px; padding: 9px; }
+  .admin-site .admin-logo { max-width: 42px !important; max-height: 44px !important; }
+  .admin-site .admin-nav .back-link { font-size: 11px; }
+  .admin-site .edit-section { padding: 16px 11px; }
+  .admin-site .edit-section-title { align-items: flex-start; }
+  .admin-site .edit-section-title h2 { font-size: 19px; }
+  .admin-site .insights-metrics article { padding: 12px 10px; }
+  .admin-site .insights-metrics span { font-size: 12px; }
+}
+
+@media (max-width: 340px) {
+  .launch-page .launch-header .brand-link img { width: 112px; }
+  .launch-page .launch-menu-toggle { flex-basis: 40px !important; min-width: 40px; width: 40px; height: 40px; }
+  .launch-page .roadmap-step { grid-template-columns: 44px minmax(0, 1fr); gap: 10px; }
+  .launch-page .roadmap-point { width: 44px; height: 44px; }
+  .launch-page .roadmap-track::before { left: 21px; }
+  .admin-site .admin-nav .theme-toggle { padding: 6px; }
+  .admin-site .admin-nav .back-link { font-size: 10px; }
+  .admin-site .insights-metrics { grid-template-columns: minmax(0, 1fr); }
+}
