@@ -668,3 +668,75 @@ img, video, iframe, svg, canvas { max-width: 100%; }
   .admin-site .admin-nav .back-link { font-size: 10px; }
   .admin-site .insights-metrics { grid-template-columns: minmax(0, 1fr); }
 }
+
+/* Keep every button label inside its own hit area, even with long localized text. */
+.launch-page :where(.button,.launch-button,.announce-link,.admin-login,.theme-toggle,.roadmap-more,.channel-link,.contact-home-link),
+.admin-site :where(button,.button,.add-page,.remove-page,.reset-button,.import-button,.export-button,.back-link,.password-toggle,.inbox-actions button,.inbox-delete) {
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: normal;
+  line-height: 1.3;
+  text-align: center;
+}
+
+.launch-page :where(.button,.launch-button,.roadmap-more,.channel-link,.contact-home-link),
+.admin-site :where(.button,.add-page,.remove-page,.reset-button,.import-button,.export-button,.password-toggle,.inbox-actions button,.inbox-delete) {
+  height: auto;
+  min-height: 44px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.launch-page :where(.button,.launch-button,.roadmap-more,.channel-link) > span,
+.admin-site :where(.button,.add-page,.remove-page,.reset-button,.import-button,.export-button) > span {
+  min-width: 0;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.launch-page .launch-header-actions > :where(a,button) {
+  display: flex;
+  min-width: 0;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.25;
+}
+.launch-page .launch-header-actions .theme-toggle > span { min-width: 0; }
+.launch-page .launch-header-actions .admin-login > span { flex: 0 0 auto; margin-left: 6px; }
+.launch-page .back-to-top { white-space: nowrap; overflow-wrap: normal; }
+.admin-site .admin-tab { min-width: max-content; white-space: nowrap; overflow-wrap: normal; }
+.admin-site .password-field { min-width: 0; max-width: 100%; }
+.admin-site .password-field .password-toggle { flex: 0 0 auto; padding-left: 12px; padding-right: 12px; }
+.admin-site .inbox-actions { min-width: 0; max-width: 100%; }
+.admin-site .inbox-actions button { flex: 1 1 130px; }
+
+@media (max-width: 720px) {
+  .launch-page .launch-header-actions > :where(a,button) {
+    width: 100%;
+    min-height: 48px;
+    padding: 11px 14px;
+    justify-content: flex-start;
+    text-align: left;
+  }
+  .launch-page .launch-header-actions .theme-toggle { justify-content: flex-start; }
+  .launch-page :where(.hero-actions,.launch-actions,.inbox-actions) > :where(a,button) { min-width: 0; max-width: 100%; }
+  .launch-page :where(.hero-actions,.launch-actions) .button,
+  .launch-page :where(.hero-actions,.launch-actions) .launch-button { width: 100%; }
+  .admin-site .admin-main :where(button,.button,.add-page,.remove-page,.reset-button,.import-button,.export-button) { width: 100%; }
+  .admin-site .admin-tabs .admin-tab { width: auto; }
+  .admin-site .password-field .password-toggle { width: auto; }
+}
+
+@media (max-width: 360px) {
+  .launch-page .launch-header-actions > :where(a,button) { font-size: 14px; padding-left: 11px; padding-right: 11px; }
+  .launch-page :where(.button,.launch-button,.roadmap-more,.channel-link) { padding-left: 13px; padding-right: 13px; }
+  .admin-site .admin-tab { padding-left: 12px; padding-right: 12px; }
+}
