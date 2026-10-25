@@ -14,6 +14,8 @@
   const objectiveSelect = document.getElementById('workspace-task-objective');
   const taskFilter = document.getElementById('workspace-task-filter');
   const refreshButton = document.getElementById('admin-workspace-refresh');
+  const exportScope = document.getElementById('workspace-export-scope');
+  const exportButton = document.getElementById('workspace-export-pdf');
   const statuses = { todo: 'À faire', doing: 'En cours', done: 'Terminée' };
   const priorities = { low: 'Basse', normal: 'Normale', high: 'Haute' };
   let state = { objectives: [], tasks: [], reports: [] };
@@ -231,6 +233,72 @@
     renderReports();
   }
 
+  const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
+  const printValue = value => escapeHtml(value).replace(/\n/g, '<br>');
+  const printBlock = (label, value) => value ? `<div class="detail"><strong>${escapeHtml(label)}</strong><p>${printValue(value)}</p></div>` : '';
+
+  function buildPrintDocument(scope) {
+    const generated = new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long', timeStyle: 'short' }).format(new Date());
+    const showTasks = scope === 'tasks' || scope === 'all';
+    const showReports = scope === 'reports' || scope === 'all';
+    const showObjectives = scope === 'all';
+    const title = scope === 'tasks' ? 'Liste des tâches' : scope === 'reports' ? 'Comptes rendus' : 'Espace de travail de l’équipe';
+    const parts = [];
+
+    if (showObjectives) {
+      const cards = state.objectives.map(goal => {
+        const linked = state.tasks.filter(task => task.objectiveId === goal.id);
+        const completed = linked.filter(task => task.status === 'done').length;
+        const progress = linked.length ? Math.round(completed / linked.length * 100) : 0;
+        const details = [goal.owner ? `Responsable : ${goal.owner}` : '', goal.dueDate ? `Échéance : ${dateLabel(goal.dueDate)}` : '', `État : ${{ active: 'En cours', paused: 'En pause', done: 'Terminé' }[goal.status]}`, `Avancement : ${progress} % (${completed}/${linked.length} tâche(s))`].filter(Boolean).map(escapeHtml).join(' · ');
+        return `<article class="card"><h3>${escapeHtml(goal.title || 'Objectif sans titre')}</h3><p class="meta">${details}</p>${goal.description ? `<p>${printValue(goal.description)}</p>` : ''}</article>`;
+      });
+      parts.push(`<section><h2>Objectifs (${state.objectives.length})</h2>${cards.length ? cards.join('') : '<p class="empty">Aucun objectif enregistré.</p>'}</section>`);
+    }
+
+    if (showTasks) {
+      const cards = state.tasks.map(task => {
+        const goal = state.objectives.find(item => item.id === task.objectiveId);
+        const meta = [statuses[task.status], priorities[task.priority], task.assignee ? `Responsable : ${task.assignee}` : '', task.dueDate ? `Échéance : ${dateLabel(task.dueDate)}` : '', goal ? `Objectif : ${goal.title}` : ''].filter(Boolean).map(escapeHtml).join(' · ');
+        return `<article class="card"><h3>${escapeHtml(task.title || 'Tâche sans titre')}</h3><p class="meta">${meta}</p>${task.description ? `<p>${printValue(task.description)}</p>` : ''}</article>`;
+      });
+      parts.push(`<section><h2>Tâches (${state.tasks.length})</h2>${cards.length ? cards.join('') : '<p class="empty">Aucune tâche enregistrée.</p>'}</section>`);
+    }
+
+    if (showReports) {
+      const reports = state.reports.slice().sort((a, b) => (b.period || b.createdAt).localeCompare(a.period || a.createdAt));
+      const cards = reports.map(report => `<article class="card report"><h3>${escapeHtml(report.title || 'Compte rendu sans titre')}</h3><p class="meta">${[dateLabel(report.period), report.author ? `Rédigé par ${report.author}` : ''].filter(Boolean).map(escapeHtml).join(' · ')}</p>${printBlock('Résumé', report.summary)}${printBlock('Avancées', report.wins)}${printBlock('Blocages', report.blockers)}${printBlock('Prochaines étapes', report.nextSteps)}</article>`);
+      parts.push(`<section><h2>Comptes rendus (${state.reports.length})</h2>${cards.length ? cards.join('') : '<p class="empty">Aucun compte rendu enregistré.</p>'}</section>`);
+    }
+
+    return `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(title)} — RV : RevolutionProject</title><style>
+      *{box-sizing:border-box}body{margin:0;padding:38px;color:#20251f;background:#fff;font:14px/1.55 Arial,Helvetica,sans-serif}main{max-width:900px;margin:0 auto}.brand{margin:0;color:#527626;font-size:11px;letter-spacing:.12em;text-transform:uppercase}.top{display:flex;justify-content:space-between;gap:20px;align-items:flex-end;padding-bottom:18px;border-bottom:2px solid #8ab945}.top h1{margin:7px 0 0;font-size:30px;line-height:1.15}.date{color:#62665d;font-size:12px;text-align:right}section{margin:28px 0}h2{margin:0 0 12px;font-size:21px}h3{margin:0 0 7px;font-size:16px;overflow-wrap:anywhere}.card{break-inside:avoid;margin:10px 0;padding:14px 16px;border:1px solid #d7d9d0;border-radius:7px}.meta{margin:0 0 8px;color:#62665d;font-size:12px;overflow-wrap:anywhere}.card>p:not(.meta){margin:7px 0 0;white-space:pre-wrap;overflow-wrap:anywhere}.detail{margin-top:10px;padding-top:8px;border-top:1px solid #e2e4dc}.detail strong{font-size:12px}.detail p{margin:4px 0 0;white-space:pre-wrap;overflow-wrap:anywhere}.empty{padding:12px;border:1px dashed #ccd0c4;color:#62665d}.foot{margin-top:30px;padding-top:12px;border-top:1px solid #d7d9d0;color:#62665d;font-size:11px}@page{size:A4;margin:15mm}@media print{body{padding:0}.card{border-color:#bbb}section{margin:18px 0}}
+    </style></head><body><main><header class="top"><div><p class="brand">RV · RevolutionProject</p><h1>${escapeHtml(title)}</h1></div><time class="date">Exporté le ${escapeHtml(generated)}</time></header>${parts.join('')}<footer class="foot">Document interne — réservé à l’équipe administratrice.</footer></main></body></html>`;
+  }
+
+  function exportWorkspacePdf() {
+    if (!loaded) {
+      setStatus('Charge d’abord l’espace privé avant de lancer un export.', 'error');
+      return;
+    }
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      setStatus('La fenêtre d’export a été bloquée. Autorise les fenêtres surgissantes pour ce site, puis réessaie.', 'error');
+      return;
+    }
+    printWindow.opener = null;
+    printWindow.document.open();
+    printWindow.document.write(buildPrintDocument(exportScope.value));
+    printWindow.document.close();
+    setStatus('Le document est prêt. Dans la fenêtre d’impression, choisis « Enregistrer au format PDF ».');
+    setTimeout(() => {
+      if (!printWindow.closed) {
+        printWindow.focus();
+        printWindow.print();
+      }
+    }, 300);
+  }
+
   async function loadWorkspace() {
     if (loading || saving) return;
     loading = true;
@@ -362,6 +430,7 @@
   tab.addEventListener('click', () => {
     if (!loaded && !loading) void loadWorkspace();
   });
+  exportButton.addEventListener('click', exportWorkspacePdf);
   refreshButton.addEventListener('click', loadWorkspace);
   taskFilter.addEventListener('change', renderTasks);
   reportForm.elements.period.value = today();
