@@ -58,3 +58,9 @@ Le journal consigne le compte administrateur, la date et les rubriques modifiée
 ## Soutien par virement direct
 
 La page `soutenir.html` propose uniquement un virement bancaire lancé par le visiteur depuis sa propre banque. Elle ne traite pas les cartes et ne passe pas par un prestataire de paiement. Dans le panel, l’onglet « Soutien » permet de saisir un bénéficiaire, un IBAN, un BIC facultatif et un motif, puis d’activer ou non l’affichage public. Les coordonnées publiées sont visibles par tous les visiteurs. Tu peux aussi saisir un lien PayPal : le paiement passera alors par PayPal. La page ne confirme pas automatiquement les virements reçus.
+
+## Espace privé de l’équipe admin
+
+L’onglet « Équipe admin » du panel permet aux comptes autorisés de créer des objectifs, d’y associer des tâches, de suivre leur état et leur priorité, puis de rédiger des comptes rendus avec les avancées, les blocages et les prochaines étapes. L’avancement d’un objectif est calculé à partir de ses tâches terminées. Les données sont dans une table distincte de `site_state` et ne sont jamais publiées sur les pages du site ; les règles RLS de Supabase limitent leur lecture et leur modification aux UUID présents dans `private.site_admins`.
+
+Pour activer l’espace dans un projet Supabase déjà configuré, exécute [`supabase/admin-workspace.sql`](supabase/admin-workspace.sql) une fois dans **Supabase → SQL Editor**. Le même schéma est également inclus à la fin de `supabase/setup.sql` pour une nouvelle installation. Après exécution, recharge `admin.html`, connecte-toi avec un compte listé comme admin, puis ouvre l’onglet « Équipe admin ». Tous les comptes autorisés partagent cet espace d’équipe.

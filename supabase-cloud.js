@@ -122,6 +122,30 @@
     }
     return rows;
   }
+  async function requireAdminSession() {
+    const valid = await restoreSession();
+    const current = session();
+    if (!valid || !current?.access_token) throw new Error('Connexion admin requise. Reconnecte-toi au panel.');
+    return current;
+  }
+  async function loadAdminWorkspace() {
+    const current = await requireAdminSession();
+    const rows = await request('/rest/v1/admin_workspace?id=eq.1&select=payload,revision,updated_at&limit=1', {}, current.access_token);
+    if (!rows?.length) throw new Error('Espace privé indisponible. Exécute supabase/admin-workspace.sql dans Supabase et vérifie que ton compte est dans private.site_admins.');
+    return rows[0];
+  }
+  async function saveAdminWorkspace(payload, revision) {
+    const current = await requireAdminSession();
+    if (!Number.isSafeInteger(Number(revision)) || Number(revision) < 1) throw new Error('Version de l’espace invalide. Recharge les données avant de réessayer.');
+    const rows = await request(`/rest/v1/admin_workspace?id=eq.1&revision=eq.${encodeURIComponent(String(revision))}`, {
+      method: 'PATCH',
+      headers: { Prefer: 'return=representation' },
+      body: JSON.stringify({ payload })
+    }, current.access_token);
+    if (!rows?.length) throw new Error('L’espace a été modifié par un autre admin. Recharge les données avant de réessayer.');
+    return rows[0];
+  }
+  function getAdminEmail() { return session()?.user?.email || ''; }
   async function signIn(email, password) {
     const result = await request('/auth/v1/token?grant_type=password', { method: 'POST', body: JSON.stringify({ email, password }), timeoutMs: 15000 });
     if (!result?.access_token) throw new Error('Connexion refusée. Vérifie l’adresse e-mail et le mot de passe du compte admin.');
@@ -149,5 +173,5 @@
   // Do not start an anonymous content fetch on the admin page. It can finish
   // after login and replace the editor's freshly loaded state while it is in use.
   const ready = /admin\.html$/i.test(location.pathname) ? Promise.resolve(null) : load();
-  window.RVCloud = { ready, load, save, signIn, signOut, restoreSession, applyBundle, collectBundle, submitContactRequest, listContactRequests, deleteContactRequest, clearContactRequests, listAdminAuditLog, listAnalytics, contentKeys: CONTENT_KEYS };
+  window.RVCloud = { ready, load, save, signIn, signOut, restoreSession, applyBundle, collectBundle, submitContactRequest, listContactRequests, deleteContactRequest, clearContactRequests, listAdminAuditLog, listAnalytics, loadAdminWorkspace, saveAdminWorkspace, getAdminEmail, contentKeys: CONTENT_KEYS };
 })();
